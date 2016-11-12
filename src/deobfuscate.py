@@ -12,14 +12,6 @@ def generateSwapTable(seed):
 	return table
 
 def deobfuscate(stin, stout):
-	# stout.write(stin.read(8))
-	# junk = struct.unpack('<II', stin.read(8))
-
-	# stin.seek(4 * junk[0], 1)
-	# (seed,) = struct.unpack('<I', stin.read(4))
-	# table = generateSwapTable(seed)
-	# stin.seek(4 * junk[1], 1)
-	# stout.write(stin.read(1))
     seed=16085
     table = generateSwapTable(seed)
 
@@ -32,11 +24,6 @@ def deobfuscate(stin, stout):
 f = open("./tests/gm_files/fire_example.gmk", "rb")
 outfile= open("./tests/gm_files/fire_example.gmu", "wb")
 try:
-    byte = f.read(1)
-    # while byte != "":
-    #     # Do stuff with byte.
-    #     byte = f.read(1)
-    #     print byte
     deobfuscate(f,outfile)
 finally:
     f.close()
