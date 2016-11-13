@@ -57,10 +57,28 @@ var is_greater_than_version_530 = function(all_vars) {
     // # 800 is a special case as it spawns a new parser which won't have previous properties
     //
     if (!all_vars.GMFileHeader)
-    return 1;
+        return 1;
     return all_vars.GMFileHeader.version > 530? 1:0;
 }
 
+var is_smaller_than_version_800 = function(all_vars) {
+    //
+    // # 800 is a special case as it spawns a new parser which won't have previous properties
+    //
+    if (!all_vars.GMFileHeader)
+        return 0;
+    return all_vars.GMFileHeader.version < 800? 1:0;
+}
+
+var GMString = Parser.start()
+    .endianess('little')
+    .int32('length')
+    .string('Value',{length:'length'})
+
+var GMConstant = Parser.start()
+    .endianess('little')
+    .nest('Name',{type:GMString})
+    .nest('Value',{type:GMString})
 
 var MainSettings = Parser.start()
     .endianess('little')
@@ -195,6 +213,36 @@ var MainSettings = Parser.start()
     .int32('ErrorsBitField')
     .int32('AuthorLength')
     .string('Author',{length:'AuthorLength'})
+    .choice('version', {
+        tag: is_greater_than_version_600,
+        choices: {
+            0: Parser.start()
+                 .endianess('little')
+                 .int32('Version'),
+
+            1: Parser.start()
+                 .endianess('little')
+                 .nest('Version',{type:GMString})
+        },
+        defaultChoice: Parser.start()
+    })
+    .buffer('LastChanged',{length:8})
+    .nest('Information',{type:GMString})
+    .choice('Constants', {
+        tag: is_smaller_than_version_800,
+        choices: {
+            0: Parser.start()
+                 .endianess('little'),
+
+            1: Parser.start()
+                 .endianess('little')
+                 .int32('NumberOfConstants')
+                 .array('Constants',{length:function() {
+                     return this['NumberOfConstants'];
+                 }, type: GMConstant})
+        },
+        defaultChoice: Parser.start()
+    })
 
 
 
