@@ -49,8 +49,18 @@ var is_greater_than_version_600 = function(all_vars) {
     //
     if (!all_vars.GMFileHeader)
     return 1;
-    return all_vars.GMFileHeader.version > 600;
+    return all_vars.GMFileHeader.version > 600? 1:0;
 }
+
+var is_greater_than_version_530 = function(all_vars) {
+    //
+    // # 800 is a special case as it spawns a new parser which won't have previous properties
+    //
+    if (!all_vars.GMFileHeader)
+    return 1;
+    return all_vars.GMFileHeader.version > 530? 1:0;
+}
+
 
 var MainSettings = Parser.start()
     .endianess('little')
@@ -94,7 +104,15 @@ var MainSettings = Parser.start()
                         .uint32('Frequency')
     })
     .uint32('DontShowButtons')
-    .uint32('UseSynchronization')
+    .choice('UseSynchronization', {
+        tag: is_greater_than_version_530,
+        choices: {
+            1: Parser.start()
+                 .endianess('little')
+                 .uint32('UseSynchronization')
+        },
+        defaultChoice: Parser.start()
+    })
     .choice('gm8', {
         tag: get_game_version,
         choices: {
@@ -166,11 +184,18 @@ var MainSettings = Parser.start()
     .uint32('LoadImageAlpha')
     .int32('ScaleProgressBar')
     .int32('IconLength')
-    // .buffer('Icon', {
-    //         length:function(a) {
-    //             console.log(this.IconLength,a)
-    //             return this.IconLength;
-    //         }})
+    .buffer('Icon', {
+            length:function(a) {
+                console.log(this.IconLength,a)
+                return this.IconLength;
+            }})
+    .int32('DisplayErrors')
+    .int32('WriteToLog')
+    .int32('AbortOnError')
+    .int32('ErrorsBitField')
+    .int32('AuthorLength')
+    .string('Author',{length:'AuthorLength'})
+
 
 
 

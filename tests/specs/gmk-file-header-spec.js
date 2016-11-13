@@ -67,7 +67,7 @@ it('should open a 530 gmd file', function(done) {
         gmk_file.then(function asserts (actual) {
             common_expects(actual,file_path);
             expect(actual.GMFileHeader.version).to.be.equal(800);
-            console.error("\n\nActual GM8 :: ",JSON.stringify(actual));
+            // console.error("\n\nActual GM8 :: ",JSON.stringify(actual));
             done();
         }).catch(common_catch_block);
     });
