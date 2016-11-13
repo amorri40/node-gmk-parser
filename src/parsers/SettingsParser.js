@@ -150,13 +150,14 @@ var MainSettings = Parser.start()
             choices: {
                 0: Parser.start(),
                 1: Parser.start()
+                .endianess('little')
                 .int32('Something')
                 .int32('imageLength')
-                // .buffer('Image', {
-                //     length:function(a) {
-                //         console.log('ImageLength::',this.imageLength,a)
-                //         return this.imageLength;
-                //     }})
+                .buffer('Image', {
+                    length:function(a) {
+                        // console.log('ImageLength::',this.imageLength,a)
+                        return this.imageLength;
+                    }})
 
             }
         }
