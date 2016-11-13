@@ -34,6 +34,24 @@ var get_game_version = function(all_vars) {
     return all_vars.GMFileHeader.version;
 }
 
+var is_greater_than_version = function(version,all_vars) {
+    //
+    // # 800 is a special case as it spawns a new parser which won't have previous properties
+    //
+    if (!all_vars.GMFileHeader)
+    return 1;
+    return all_vars.GMFileHeader.version > version
+}
+
+var is_greater_than_version_600 = function(all_vars) {
+    //
+    // # 800 is a special case as it spawns a new parser which won't have previous properties
+    //
+    if (!all_vars.GMFileHeader)
+    return 1;
+    return all_vars.GMFileHeader.version > 600;
+}
+
 var MainSettings = Parser.start()
     .endianess('little')
     .uint32('StartFullscreen')
@@ -75,6 +93,84 @@ var MainSettings = Parser.start()
                         .uint32('Resolution')
                         .uint32('Frequency')
     })
+    .uint32('DontShowButtons')
+    .uint32('UseSynchronization')
+    .choice('gm8', {
+        tag: get_game_version,
+        choices: {
+            800: Parser.start()
+                 .endianess('little')
+                 .uint32('DisableScreenSavers')
+        },
+        defaultChoice: Parser.start()
+    })
+    .uint32('LetF4SwitchFullScreen')
+    .uint32('LetF1ShowGameInfo')
+    .uint32('LetEscEndGame')
+    .uint32('LetF5SaveF6Load')
+    .choice('gm53', {
+        tag: get_game_version,
+        choices: {
+            530: Parser.start()
+                 .endianess('little')
+                 .uint32('Ignore')
+                 .uint32('Ignore2')
+        },
+        defaultChoice: Parser.start()
+    })
+    .choice('gm6', {
+        tag: is_greater_than_version_600,
+        choices: {
+            1: Parser.start()
+                 .endianess('little')
+                 .uint32('LetF9ScreenShot')
+                 .uint32('TreatCloseAsEscape')
+        },
+        defaultChoice: Parser.start()
+    })
+    .uint32('GamePriority')
+    .uint32('FreezeOnLoseFocus')
+    .uint32('LoadBarMode')
+    .choice('LoadingBar', {
+        tag: 'LoadBarMode',
+        choices: {
+            0: Parser.start()
+                 .endianess('little'),
+            1: Parser.start()
+                 .endianess('little'),
+            2: Parser.start()
+                 .endianess('little')
+        },
+        defaultChoice: Parser.start()
+    })
+    .uint32('ShowCustomLoadImage')
+    .choice(
+        'LoadImage', {
+            tag: 'ShowCustomLoadImage',
+            choices: {
+                0: Parser.start(),
+                1: Parser.start()
+                .int32('Something')
+                .int32('imageLength')
+                // .buffer('Image', {
+                //     length:function(a) {
+                //         console.log('ImageLength::',this.imageLength,a)
+                //         return this.imageLength;
+                //     }})
+
+            }
+        }
+    )
+    .uint32('ImagePartiallyTransparent')
+    .uint32('LoadImageAlpha')
+    .int32('ScaleProgressBar')
+    .int32('IconLength')
+    // .buffer('Icon', {
+    //         length:function(a) {
+    //             console.log(this.IconLength,a)
+    //             return this.IconLength;
+    //         }})
+
 
 
 

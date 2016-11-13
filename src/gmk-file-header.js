@@ -67,11 +67,15 @@ GMFileReader = {
     processData: function(data) {
         var game_header = GMFileHeader.parse(data);
         if (GMFileReader.isObfuscated(game_header)) {
+            console.error("IS OBFUSCATED!!");
             var unencrypted_data = GMKEncryption.unencryptFullGame(game_header,data);
             return GMFileReader.processUnEncryptedGame(unencrypted_data);
         }
         return GMFileReader.processUnEncryptedGame(data);
     },
+    //
+    // # Make sure data is unencrypted when sent to this function
+    //
     processUnEncryptedGame: function(data) {
         GMGame.zlib=require('zlib')
         GMGame.MainSettings = SettingsParser.MainSettings;
