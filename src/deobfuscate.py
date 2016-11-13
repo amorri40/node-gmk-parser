@@ -1,30 +1,79 @@
 import struct
+import os
 
 def generateSwapTable(seed):
-	a = 6 + (seed % 250)
-	b = seed / 250
-	table = (range(0, 256), range(0, 256))
-	for i in range(1, 10001):
-		j = 1 + ((i * a + b) % 254)
-		table[0][j], table[0][j + 1] = table[0][j + 1], table[0][j]
-	for i in range(1, 256):
-		table[1][table[0][i]] = i
-	return table
+    a = 6 + (seed % 250)
+    b = seed / 250
+    table = (range(0, 256), range(0, 256))
+    for i in range(1, 10001):
+        j = 1 + ((i * a + b) % 254)
+        table[0][j], table[0][j + 1] = table[0][j + 1], table[0][j]
+    for i in range(1, 256):
+        table[1][table[0][i]] = i
+    return table
 
-def deobfuscate(stin, stout):
-    seed=16085
+# correct_table=([0, 55, 53, 56, 57, 59, 52, 60, 61, 63, 51, 64, 65, 67, 49, 68, 70, 71, 48, 72, 74, 46, 75, 76, 78, 45, 79,
+#  80, 82, 44, 83, 85, 86, 42, 87, 89, 90, 41, 91, 93, 40, 94, 95, 97, 38, 98, 99, 101, 37, 102, 104, 105, 36, 106,
+# 108, 109, 34, 110, 112, 33, 113, 114, 116, 32, 117, 118, 120, 30, 121, 123, 124, 29, 125, 127, 27, 128, 129, 131,
+# 26, 132, 133, 135, 25, 136, 137, 139, 23, 140, 142, 143, 22, 144, 146, 21, 147, 148, 150, 19, 151, 152, 154, 18, 1
+# 55, 157, 158, 17, 159, 161, 162, 15, 163, 165, 14, 166, 167, 169, 13, 170, 171, 173, 11, 174, 176, 177, 10, 178, 1
+# 80, 181, 8, 182, 184, 7, 185, 186, 188, 6, 189, 190, 192, 4, 193, 195, 196, 3, 197, 199, 200, 2, 201, 203, 1, 204,
+#  205, 207, 5, 208, 209, 211, 9, 212, 214, 215, 12, 216, 218, 16, 219, 220, 222, 20, 223, 224, 226, 24, 227, 228, 2
+# 30, 28, 231, 233, 234, 31, 235, 237, 35, 238, 239, 241, 39, 242, 243, 245, 43, 246, 248, 249, 47, 250, 252, 253, 5
+# 0, 254, 255, 54, 251, 247, 244, 58, 240, 236, 232, 62, 229, 225, 221, 66, 217, 213, 210, 69, 206, 202, 73, 198, 19
+# 4, 191, 77, 187, 183, 179, 81, 175, 172, 168, 84, 164, 160, 156, 88, 153, 149, 92, 145, 141, 138, 96, 134, 130, 12
+# 6, 100, 122, 119, 115, 103, 111, 107], [0, 150, 147, 143, 139, 154, 135, 131, 128, 158, 124, 120, 162, 116, 112, 1
+# 09, 165, 105, 101, 97, 169, 93, 90, 86, 173, 82, 78, 74, 177, 71, 67, 181, 63, 59, 56, 184, 52, 48, 44, 188, 40, 3
+# 7, 33, 192, 29, 25, 21, 196, 18, 14, 200, 10, 6, 2, 203, 1, 3, 4, 207, 5, 7, 8, 211, 9, 11, 12, 215, 13, 15, 219,
+# 16, 17, 19, 222, 20, 22, 23, 226, 24, 26, 27, 230, 28, 30, 234, 31, 32, 34, 238, 35, 36, 38, 241, 39, 41, 42, 245,
+#  43, 45, 46, 249, 47, 49, 253, 50, 51, 53, 255, 54, 55, 57, 254, 58, 60, 61, 252, 62, 64, 65, 251, 66, 68, 250, 69
+# , 70, 72, 248, 73, 75, 76, 247, 77, 79, 80, 246, 81, 83, 84, 244, 85, 87, 243, 88, 89, 91, 242, 92, 94, 95, 240, 9
+# 6, 98, 99, 239, 100, 102, 237, 103, 104, 106, 236, 107, 108, 110, 235, 111, 113, 114, 233, 115, 117, 118, 232, 119
+# , 121, 231, 122, 123, 125, 229, 126, 127, 129, 228, 130, 132, 133, 227, 134, 136, 137, 225, 138, 140, 224, 141, 14
+# 2, 144, 223, 145, 146, 148, 221, 149, 151, 152, 220, 153, 155, 156, 218, 157, 159, 217, 160, 161, 163, 216, 164, 1
+# 66, 167, 214, 168, 170, 171, 213, 172, 174, 175, 212, 176, 178, 210, 179, 180, 182, 209, 183, 185, 186, 208, 187,
+# 189, 190, 206, 191, 193, 205, 194, 195, 197, 204, 198, 199, 201, 202])
+
+def deobfuscate(stin, stout,size):
+    byte_count=8+8
+    stout.write(stin.read(8))
+    junk = struct.unpack('<II', stin.read(8))
+    stin.seek(4 * junk[0], 1)
+    byte_count+=4 * junk[0]
+    (seed,) = struct.unpack('<I', stin.read(4))
     table = generateSwapTable(seed)
-
+    print "Seed:",seed
+    print "Table",table
+    stin.seek(4 * junk[1], 1)
+    # stout.write(stin.read(1))
+    byte = f.read(1)
+    stout.write(byte)
     while True:
-		b = stin.read(1)
-		if len(b) == 0:
-			break
-		stout.write(chr((table[1][ord(b)] - stin.tell() + 1) & 0xFF))
+        byte = stin.read(1)
+        if byte:
+            stout.write(chr((table[1][ord(byte)] - stin.tell() + 1) & 0xFF))
+        elif byte_count>size:
+            print "Byte count",byte_count
+            break
+        byte_count+=1
+        stout.flush()
+    print byte_count
+    stout.close()
+    # 2091 size of output supposed to be 8290
 
-f = open("./tests/gm_files/fire_example.gmk", "rb")
-outfile= open("./tests/gm_files/fire_example.gmu", "wb")
-try:
-    deobfuscate(f,outfile)
-finally:
-    f.close()
-    outfile.close()
+with open("./tests/gm_files/fire_example.gmk", "rb", buffering=0) as f:
+    with open("./tests/gm_files/fire_example.gmu2", "wb", buffering=0) as outfile:
+        print "Initial Size ::",os.path.getsize("./tests/gm_files/fire_example.gmk")
+        try:
+            # byte = f.read(1)
+            # while byte != "":
+            #     # Do stuff with byte.
+            #     byte = f.read(1)
+            #     print byte
+            numberOfBytes = os.path.getsize("./tests/gm_files/fire_example.gmk")
+            deobfuscate(f,outfile,numberOfBytes)
+        finally:
+            f.close()
+            outfile.close()
+            print "Closed file"
+            print "Close Size ::",os.path.getsize("./tests/gm_files/fire_example.gmu2")
