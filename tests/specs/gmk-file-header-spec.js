@@ -16,11 +16,12 @@ describe('Game Maker Header', function() {
         gmk_file.then(function asserts (actual) {
             expect(actual).to.not.be.undefined;
             expect(actual).to.not.be.false;
-            expect({ identifier: 1234321 }).to.have.all.keys("identifier");
+            // expect({ identifier: 1234321 }).to.have.all.keys("identifier");
             expect(actual).to.be.object;
 
-            expect(actual).to.have.all.keys("identifier","version");
-            expect(actual.version).to.be.equal(800);
+            expect(actual.GMFileHeader).to.have.all.keys("identifier","version","encryption");
+            expect(actual.GMFileHeader.version).to.be.equal(800);
+            console.error("Actual",JSON.stringify(actual));
             done();
         }).catch(function(err) {
             throw err;
@@ -35,11 +36,11 @@ describe('Game Maker Header', function() {
         gmk_file.then(function asserts (actual) {
             expect(actual).to.not.be.undefined;
             expect(actual).to.not.be.false;
-            expect({ identifier: 1234321 }).to.have.all.keys("identifier");
+
             expect(actual).to.be.object;
 
-            expect(actual).to.have.property("identifier");
-            expect(actual.version).to.be.equal(600);
+            expect(actual.GMFileHeader).to.have.property("identifier");
+            expect(actual.GMFileHeader.version).to.be.equal(600);
             done();
         }).catch(function(err) {
             console.error("Something bad happened:",err);
@@ -56,12 +57,12 @@ describe('Game Maker Header', function() {
         gmk_file.then(function asserts (actual) {
             expect(actual).to.not.be.undefined;
             expect(actual).to.not.be.false;
-            expect({ identifier: 1234321 }).to.have.all.keys("identifier");
+            // expect({ identifier: 1234321 }).to.have.all.keys("identifier");
             expect(actual).to.be.object;
-
-            expect(actual).to.have.property("identifier");
-            expect(actual.version).to.be.equal(701);
-            expect(actual.encryption.seed).to.be.equal(16085);
+            // console.error("Actual",actual);
+            expect(actual.GMFileHeader).to.have.property("identifier");
+            expect(actual.GMFileHeader.version).to.be.equal(701);
+            expect(actual.GMFileHeader.encryption.seed).to.be.equal(16085);
             done();
         }).catch(function(err) {
             console.error("Something bad happened:",err);
