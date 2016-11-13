@@ -5,11 +5,74 @@ var GameID = Parser.start()
     .endianess('little')
     .uint32('GameID')
 
+var ColorDepth = Parser.start()
+    .endianess('little')
+    .choice('ColorDepth', {
+        tag: 'version',
+        choices: {
+            530: Parser.start()
+                .endianess('little')
+                .uint32('ColorDepth')
+                .uint32('ExclusiveGraphics')
+                .uint32('Resolution')
+                .uint32('Frequency')
+                .uint32('VBlank')
+                .uint32('CaptionInFullscreen')
+        },
+        defaultChoice: Parser.start()
+                        .endianess('little')
+                        .uint32('ColorDepth')
+                        .uint32('Resolution')
+                        .uint32('Frequency')
+    })
+
+var get_game_version = function(all_vars) {
+    return all_vars.GMFileHeader.version;
+}
+
 var MainSettings = Parser.start()
     .endianess('little')
     .uint32('StartFullscreen')
     .uint32('Interpolate')
     .uint32('DontDrawBorder')
+    .uint32('DisplayCursor')
+    .uint32('Scaling')
+    .choice('WindowSettings', {
+        tag: get_game_version,
+        choices: {
+            530: Parser.start()
+                .endianess('little')
+                .uint32('FullscreenScale')
+                .uint32('OnlyScaleWithHardwareSupport')
+        },
+        defaultChoice: Parser.start()
+                        .endianess('little')
+                        .uint32('AllowWindowResize')
+                        .uint32('AlwaysOnTop')
+                        .uint32('ColorOutsideRoom')
+
+    })
+    .uint32('SetResolution')
+    .choice('ColorDepth', {
+        tag: get_game_version,
+        choices: {
+            530: Parser.start()
+                .endianess('little')
+                .uint32('ColorDepth')
+                .uint32('ExclusiveGraphics')
+                .uint32('Resolution')
+                .uint32('Frequency')
+                .uint32('VBlank')
+                .uint32('CaptionInFullscreen')
+        },
+        defaultChoice: Parser.start()
+                        .endianess('little')
+                        .uint32('ColorDepth')
+                        .uint32('Resolution')
+                        .uint32('Frequency')
+    })
+
+
 
 var InflatedSettings = Parser.start()
     .endianess('little')
@@ -30,14 +93,20 @@ var GameSettings = Parser.start()
     .endianess('little')
     .uint32('version')
     .choice('data', {
-        tag: 'version',
+        tag: function() {
+            MainSettings.version=this.version;
+       return this.version;
+       },
         choices: {
             800: InflatedSettings
         },
         defaultChoice: MainSettings
     })
+    .MainSettings = MainSettings;
 
 
 module.exports.GameID = GameID;
 module.exports.GameSettings = GameSettings;
 module.exports.MainSettings = MainSettings;
+
+console.error("CODE::",MainSettings.getCode());

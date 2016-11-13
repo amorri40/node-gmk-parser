@@ -1,0 +1,36 @@
+{
+  "name": "node-gmk-parser",
+  "version": "1.0.0",
+  "description": "Node.js Game Maker File Parser",
+  "main": "./src/gmk-file-header.js",
+  "directories": {
+    "test": "tests"
+  },
+  "dependencies": {
+    "binary-parser": "git+https://github.com/amorri40/binary-parser.git",
+    "bluebird": "^3.4.6",
+    "chai": "^3.5.0",
+    "grunt": "^1.0.1",
+    "grunt-contrib-watch": "^1.0.0",
+    "grunt-mocha-test": "^0.13.2"
+  },
+  "devDependencies": {
+    "mocha": "^3.1.2"
+  },
+  "scripts": {
+    "test": "grunt watch"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/amorri40/node-gmk-parser.git"
+  },
+  "keywords": [
+    "gamemaker"
+  ],
+  "author": "",
+  "license": "BSD-2-Clause",
+  "bugs": {
+    "url": "https://github.com/amorri40/node-gmk-parser/issues"
+  },
+  "homepage": "https://github.com/amorri40/node-gmk-parser#readme"
+}

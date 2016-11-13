@@ -9,19 +9,18 @@ describe('Game Maker Header', function() {
         expect(GMFileReader).to.not.be.undefined;
     });
 
-    it('should open a v800 gmk file', function(done) {
+it('should open a 530 gmd file', function(done) {
         this.timeout(25000);
-        var gmk_file = GMFileReader.openGmFile('./tests/gm_files/fpsexample.gmk');
+        var gmk_file = GMFileReader.openGmFile('./tests/gm_files/pathtracer.gmd');
 
         gmk_file.then(function asserts (actual) {
             expect(actual).to.not.be.undefined;
             expect(actual).to.not.be.false;
-            // expect({ identifier: 1234321 }).to.have.all.keys("identifier");
             expect(actual).to.be.object;
 
             expect(actual.GMFileHeader).to.have.all.keys("identifier","version","encryption");
-            expect(actual.GMFileHeader.version).to.be.equal(800);
-            console.error("Actual",JSON.stringify(actual));
+            expect(actual.GMFileHeader.version).to.be.equal(530);
+            console.error("Actual 530: ",JSON.stringify(actual));
             done();
         }).catch(function(err) {
             throw err;
@@ -69,6 +68,25 @@ describe('Game Maker Header', function() {
             throw err;
             // expect(false).to.be.equal(true);
             // assert.fail(err);
+            // done();
+        });
+    });
+
+    it('should open a v800 gmk file', function(done) {
+        this.timeout(25000);
+        var gmk_file = GMFileReader.openGmFile('./tests/gm_files/fpsexample.gmk');
+
+        gmk_file.then(function asserts (actual) {
+            expect(actual).to.not.be.undefined;
+            expect(actual).to.not.be.false;
+            expect(actual).to.be.object;
+
+            expect(actual.GMFileHeader).to.have.all.keys("identifier","version","encryption");
+            expect(actual.GMFileHeader.version).to.be.equal(800);
+            console.error("Actual",JSON.stringify(actual));
+            done();
+        }).catch(function(err) {
+            throw err;
             // done();
         });
     });
