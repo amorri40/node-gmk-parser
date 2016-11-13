@@ -27,6 +27,10 @@ var ColorDepth = Parser.start()
     })
 
 var get_game_version = function(all_vars) {
+    //
+    // # 800 is a special case as it spawns a new parser which won't have previous properties
+    //
+    if (!all_vars.GMFileHeader) return 800;
     return all_vars.GMFileHeader.version;
 }
 
@@ -36,7 +40,7 @@ var MainSettings = Parser.start()
     .uint32('Interpolate')
     .uint32('DontDrawBorder')
     .uint32('DisplayCursor')
-    .uint32('Scaling')
+    .int32('Scaling')
     .choice('WindowSettings', {
         tag: get_game_version,
         choices: {
@@ -87,22 +91,19 @@ var InflatedSettings = Parser.start()
             return parsed_data
         }
     })
-    //.zlib=require('zlib');
 
 var GameSettings = Parser.start()
     .endianess('little')
     .uint32('version')
     .choice('data', {
         tag: function() {
-            MainSettings.version=this.version;
-       return this.version;
+            return this.version;
        },
         choices: {
             800: InflatedSettings
         },
         defaultChoice: MainSettings
     })
-    .MainSettings = MainSettings;
 
 
 module.exports.GameID = GameID;

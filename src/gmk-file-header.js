@@ -57,6 +57,13 @@ GMFileReader = {
     getFullByteDataFromFile: function(file_path) {
         return readFile(file_path);
     },
+    //
+    // # Save game to .json format
+    //
+    saveJSONOutput: function(full_path,game_object) {
+        fs.writeFile(full_path,JSON.stringify(game_object,null,2));
+        return true;
+    },
     processData: function(data) {
         var game_header = GMFileHeader.parse(data);
         if (GMFileReader.isObfuscated(game_header)) {
@@ -69,7 +76,7 @@ GMFileReader = {
         GMGame.zlib=require('zlib')
         GMGame.MainSettings = SettingsParser.MainSettings;
         var parsed_gm_file = GMGame.parse(data);
-        console.error("GM File:",parsed_gm_file.GMFileHeader.version,parsed_gm_file);
+        // console.error("GM File:",parsed_gm_file.GMFileHeader.version,parsed_gm_file);
         return parsed_gm_file;
     },
     isObfuscated: function(parsed_gm_file) {

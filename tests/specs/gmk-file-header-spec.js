@@ -4,6 +4,19 @@ var assert = require('chai').assert;
 
 describe('Game Maker Header', function() {
     var GMFileReader = require('../../src/gmk-file-header.js');
+    var common_catch_block = function(err) {
+        throw err;
+    }
+
+    var common_expects = function(actual,file_path) {
+        expect(actual).to.not.be.undefined;
+        expect(actual).to.not.be.false;
+        expect(actual).to.be.object;
+        expect(actual.GMFileHeader).to.have.all.keys("identifier","version","encryption");
+
+        var did_save = GMFileReader.saveJSONOutput(file_path+'.json', actual);
+        expect(did_save).to.be.equal(true);
+    }
 
     it('should exist', function() {
         expect(GMFileReader).to.not.be.undefined;
@@ -11,83 +24,51 @@ describe('Game Maker Header', function() {
 
 it('should open a 530 gmd file', function(done) {
         this.timeout(25000);
-        var gmk_file = GMFileReader.openGmFile('./tests/gm_files/pathtracer.gmd');
+        var file_path = './tests/gm_files/pathtracer.gmd';
+        var gmk_file = GMFileReader.openGmFile(file_path);
 
         gmk_file.then(function asserts (actual) {
-            expect(actual).to.not.be.undefined;
-            expect(actual).to.not.be.false;
-            expect(actual).to.be.object;
-
-            expect(actual.GMFileHeader).to.have.all.keys("identifier","version","encryption");
+            common_expects(actual, file_path);
             expect(actual.GMFileHeader.version).to.be.equal(530);
-            console.error("Actual 530: ",JSON.stringify(actual));
             done();
-        }).catch(function(err) {
-            throw err;
-            // done();
-        });
+        }).catch(common_catch_block);
     });
 
     it('should open a gm6 (600) file', function(done) {
         this.timeout(50000);
-        var gmk_file = GMFileReader.openGmFile('./tests/gm_files/1945v3.gm6');
+        var file_path = './tests/gm_files/1945v3.gm6';
+        var gmk_file = GMFileReader.openGmFile(file_path);
 
         gmk_file.then(function asserts (actual) {
-            expect(actual).to.not.be.undefined;
-            expect(actual).to.not.be.false;
-
-            expect(actual).to.be.object;
-
-            expect(actual.GMFileHeader).to.have.property("identifier");
+            common_expects(actual, file_path);
             expect(actual.GMFileHeader.version).to.be.equal(600);
             done();
-        }).catch(function(err) {
-            console.error("Something bad happened:",err);
-
-            assert.fail(err);
-            done();
-        });
+        }).catch(common_catch_block);
     });
 
     it('should open a gm7 (701) obfuscated file', function(done) {
         this.timeout(50000);
-        var gmk_file = GMFileReader.openGmFile('./tests/gm_files/fire_example.gmk');
+        var file_path = './tests/gm_files/fire_example.gmk';
+        var gmk_file = GMFileReader.openGmFile(file_path);
 
         gmk_file.then(function asserts (actual) {
-            expect(actual).to.not.be.undefined;
-            expect(actual).to.not.be.false;
-            // expect({ identifier: 1234321 }).to.have.all.keys("identifier");
-            expect(actual).to.be.object;
-            // console.error("Actual",actual);
-            expect(actual.GMFileHeader).to.have.property("identifier");
+            common_expects(actual,file_path);
             expect(actual.GMFileHeader.version).to.be.equal(701);
             expect(actual.GMFileHeader.encryption.seed).to.be.equal(16085);
             done();
-        }).catch(function(err) {
-            console.error("Something bad happened:",err);
-            throw err;
-            // expect(false).to.be.equal(true);
-            // assert.fail(err);
-            // done();
-        });
+        }).catch(common_catch_block);
     });
 
     it('should open a v800 gmk file', function(done) {
         this.timeout(25000);
-        var gmk_file = GMFileReader.openGmFile('./tests/gm_files/fpsexample.gmk');
+        var file_path = './tests/gm_files/fpsexample.gmk';
+        var gmk_file = GMFileReader.openGmFile(file_path);
 
         gmk_file.then(function asserts (actual) {
-            expect(actual).to.not.be.undefined;
-            expect(actual).to.not.be.false;
-            expect(actual).to.be.object;
-
-            expect(actual.GMFileHeader).to.have.all.keys("identifier","version","encryption");
+            common_expects(actual,file_path);
             expect(actual.GMFileHeader.version).to.be.equal(800);
-            console.error("Actual",JSON.stringify(actual));
+            console.error("\n\nActual GM8 :: ",JSON.stringify(actual));
             done();
-        }).catch(function(err) {
-            throw err;
-            // done();
-        });
+        }).catch(common_catch_block);
     });
 });
