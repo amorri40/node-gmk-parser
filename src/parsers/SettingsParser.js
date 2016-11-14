@@ -70,6 +70,15 @@ var is_smaller_than_version_800 = function(all_vars) {
     return all_vars.GMFileHeader.version < 800? 1:0;
 }
 
+var is_greater_than_equal_version_800 = function(all_vars) {
+    //
+    // # 800 is a special case as it spawns a new parser which won't have previous properties
+    //
+    if (!all_vars.GMFileHeader)
+        return 1;
+    return all_vars.GMFileHeader.version >= 800? 1:0;
+}
+
 var GMString = Parser.start()
     .endianess('little')
     .int32('length')
@@ -79,6 +88,20 @@ var GMConstant = Parser.start()
     .endianess('little')
     .nest('Name',{type:GMString})
     .nest('Value',{type:GMString})
+
+var GMInclude = Parser.start()
+    .endianess('little')
+    .nest('FilePath',{type:GMString})
+
+var GMIncludes = Parser.start()
+                 .endianess('little')
+                 .int32('NumberOfIncludes')
+                 .array('Includes',{length:function() {
+                     return this['NumberOfIncludes'];
+                 }, type: GMConstant})
+                 .int32('IncludeFolders')
+                 .int32('OverwriteExisting')
+                 .int32('RemoveAtGameEnd')
 
 var MainSettings = Parser.start()
     .endianess('little')
@@ -240,6 +263,38 @@ var MainSettings = Parser.start()
                  .array('Constants',{length:function() {
                      return this['NumberOfConstants'];
                  }, type: GMConstant})
+        },
+        defaultChoice: Parser.start()
+    })
+    .choice('buildInformation', {
+        tag: is_greater_than_version_600,
+        choices: {
+            0: Parser.start()
+                 .endianess('little')
+                 .nest('Includes',{type:GMIncludes}),
+            1: Parser.start()
+                 .endianess('little')
+                 .int32('VersionMajor')
+                 .int32('VersionMinor')
+                 .int32('VersionRelease')
+                 .int32('VersionBuild')
+                 .nest('Company',{type:GMString})
+                 .nest('Product',{type:GMString})
+                 .nest('Copyright',{type:GMString})
+                 .nest('Description',{type:GMString})
+        },
+        defaultChoice: Parser.start()
+    })
+    .choice('lastChanged', {
+        tag: is_greater_than_equal_version_800,
+        choices: {
+            0: Parser.start()
+                 .endianess('little'),
+
+            1: Parser.start()
+                 .endianess('little')
+                 .int32('LastChanged')
+                 .int32('LastChanged2')
         },
         defaultChoice: Parser.start()
     })
