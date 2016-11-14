@@ -1,5 +1,6 @@
 var Parser = require("binary-parser").Parser;
 var GMKZlib = require("./GMKZlib.js");
+var VersionCheck = require("../util/VersionChecks");
 
 var GameID = Parser.start()
     .endianess('little')
@@ -26,58 +27,7 @@ var ColorDepth = Parser.start()
                         .uint32('Frequency')
     })
 
-var get_game_version = function(all_vars) {
-    //
-    // # 800 is a special case as it spawns a new parser which won't have previous properties
-    //
-    if (!all_vars.GMFileHeader) return 800;
-    return all_vars.GMFileHeader.version;
-}
 
-var is_greater_than_version = function(version,all_vars) {
-    //
-    // # 800 is a special case as it spawns a new parser which won't have previous properties
-    //
-    if (!all_vars.GMFileHeader)
-    return 1;
-    return all_vars.GMFileHeader.version > version
-}
-
-var is_greater_than_version_600 = function(all_vars) {
-    //
-    // # 800 is a special case as it spawns a new parser which won't have previous properties
-    //
-    if (!all_vars.GMFileHeader)
-    return 1;
-    return all_vars.GMFileHeader.version > 600? 1:0;
-}
-
-var is_greater_than_version_530 = function(all_vars) {
-    //
-    // # 800 is a special case as it spawns a new parser which won't have previous properties
-    //
-    if (!all_vars.GMFileHeader)
-        return 1;
-    return all_vars.GMFileHeader.version > 530? 1:0;
-}
-
-var is_smaller_than_version_800 = function(all_vars) {
-    //
-    // # 800 is a special case as it spawns a new parser which won't have previous properties
-    //
-    if (!all_vars.GMFileHeader)
-        return 0;
-    return all_vars.GMFileHeader.version < 800? 1:0;
-}
-
-var is_greater_than_equal_version_800 = function(all_vars) {
-    //
-    // # 800 is a special case as it spawns a new parser which won't have previous properties
-    //
-    if (!all_vars.GMFileHeader)
-        return 1;
-    return all_vars.GMFileHeader.version >= 800? 1:0;
-}
 
 var GMString = Parser.start()
     .endianess('little')
@@ -98,7 +48,7 @@ var GMIncludes = Parser.start()
                  .int32('NumberOfIncludes')
                  .array('Includes',{length:function() {
                      return this['NumberOfIncludes'];
-                 }, type: GMConstant})
+                 }, type: GMInclude})
                  .int32('IncludeFolders')
                  .int32('OverwriteExisting')
                  .int32('RemoveAtGameEnd')
@@ -111,7 +61,7 @@ var MainSettings = Parser.start()
     .uint32('DisplayCursor')
     .int32('Scaling')
     .choice('WindowSettings', {
-        tag: get_game_version,
+        tag: VersionCheck.get_game_version,
         choices: {
             530: Parser.start()
                 .endianess('little')
@@ -127,7 +77,7 @@ var MainSettings = Parser.start()
     })
     .uint32('SetResolution')
     .choice('ColorDepth', {
-        tag: get_game_version,
+        tag: VersionCheck.get_game_version,
         choices: {
             530: Parser.start()
                 .endianess('little')
@@ -146,7 +96,7 @@ var MainSettings = Parser.start()
     })
     .uint32('DontShowButtons')
     .choice('UseSynchronization', {
-        tag: is_greater_than_version_530,
+        tag: VersionCheck.is_greater_than_version_530,
         choices: {
             1: Parser.start()
                  .endianess('little')
@@ -155,7 +105,7 @@ var MainSettings = Parser.start()
         defaultChoice: Parser.start()
     })
     .choice('gm8', {
-        tag: get_game_version,
+        tag: VersionCheck.get_game_version,
         choices: {
             800: Parser.start()
                  .endianess('little')
@@ -168,7 +118,7 @@ var MainSettings = Parser.start()
     .uint32('LetEscEndGame')
     .uint32('LetF5SaveF6Load')
     .choice('gm53', {
-        tag: get_game_version,
+        tag: VersionCheck.get_game_version,
         choices: {
             530: Parser.start()
                  .endianess('little')
@@ -178,7 +128,7 @@ var MainSettings = Parser.start()
         defaultChoice: Parser.start()
     })
     .choice('gm6', {
-        tag: is_greater_than_version_600,
+        tag: VersionCheck.is_greater_than_version_600,
         choices: {
             1: Parser.start()
                  .endianess('little')
@@ -237,7 +187,7 @@ var MainSettings = Parser.start()
     .int32('AuthorLength')
     .string('Author',{length:'AuthorLength'})
     .choice('version', {
-        tag: is_greater_than_version_600,
+        tag: VersionCheck.is_greater_than_version_600,
         choices: {
             0: Parser.start()
                  .endianess('little')
@@ -252,7 +202,7 @@ var MainSettings = Parser.start()
     .buffer('LastChanged',{length:8})
     .nest('Information',{type:GMString})
     .choice('Constants', {
-        tag: is_smaller_than_version_800,
+        tag: VersionCheck.is_smaller_than_version_800,
         choices: {
             0: Parser.start()
                  .endianess('little'),
@@ -267,11 +217,21 @@ var MainSettings = Parser.start()
         defaultChoice: Parser.start()
     })
     .choice('buildInformation', {
-        tag: is_greater_than_version_600,
+        tag: VersionCheck.is_greater_than_version_600,
         choices: {
             0: Parser.start()
                  .endianess('little')
-                 .nest('Includes',{type:GMIncludes}),
+                 .choice('Includes', {
+                     tag: VersionCheck.is_greater_than_version_530,
+                     choices: {
+                            0: Parser.start()
+                                .endianess('little'),
+
+                            1: Parser.start()
+                                .endianess('little')
+                                .nest('Includes',{type:GMIncludes}),
+                 } }),
+
             1: Parser.start()
                  .endianess('little')
                  .int32('VersionMajor')
@@ -285,19 +245,20 @@ var MainSettings = Parser.start()
         },
         defaultChoice: Parser.start()
     })
-    .choice('lastChanged', {
-        tag: is_greater_than_equal_version_800,
-        choices: {
-            0: Parser.start()
-                 .endianess('little'),
 
-            1: Parser.start()
-                 .endianess('little')
-                 .int32('LastChanged')
-                 .int32('LastChanged2')
-        },
-        defaultChoice: Parser.start()
-    })
+    // .choice('lastChanged', {
+    //     tag: VersionCheck.is_greater_than_equal_version_800,
+    //     choices: {
+    //         0: Parser.start()
+    //              .endianess('little'),
+
+    //         1: Parser.start()
+    //              .endianess('little')
+    //              .int32('LastChanged')
+    //              .int32('LastChanged2')
+    //     },
+    //     defaultChoice: Parser.start()
+    // })
 
 
 
@@ -335,4 +296,4 @@ module.exports.GameID = GameID;
 module.exports.GameSettings = GameSettings;
 module.exports.MainSettings = MainSettings;
 
-console.error("CODE::",MainSettings.getCode());
+// console.error("CODE::",MainSettings.getCode());
