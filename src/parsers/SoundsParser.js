@@ -44,7 +44,7 @@ var GMSound = Parser.start()
 
                 .choice('data', {
                     tag: function(all_vars) {
-                        console.error("SOUND",JSON.stringify(all_vars), this.isvalid);
+                        // console.error("SOUND",JSON.stringify(all_vars), this.isvalid);
                         return this.isvalid;
                     },//'isvalid',
                     choices: {
@@ -56,21 +56,21 @@ var GMSound = Parser.start()
                             .nest('Name',{type:GMSoundData})
                     }
                 })
+module.exports.GMSound = GMSound;
 
 var GMCompressedSound = Parser.start()
                 .endianess('little')
-                .uint32('limit')
-                // .buffer('inflated_data',{
-                //     length:function() {
-                //         return this.limit
-                //     },
-                //     formatter: function(buffer) {
-                //         var inflated_buffer = this.zlib.inflateSync(buffer);
-                //         var parsed_data = this.GMSound.parse(inflated_buffer);
-                //         return parsed_data
-                //         // return "TODO Compressed GM8 Resource";
-                //     }
-                // }).GMSound=GMSound;
+                .int32('limit')
+                .buffer('inflated_data',{
+                    length: 'limit',
+                    formatter: function(buffer) {
+                        var inflated_buffer = this.zlib.inflateSync(buffer);
+                        var parsed_data = this.Parsers.GMSound.parse(inflated_buffer);
+                        return parsed_data
+                        // return "TODO Compressed GM8 Resource";
+                        return {};
+                    }
+                })
 
 var GMSounds = Parser.start()
                  .endianess('little')
@@ -83,14 +83,14 @@ var GMSounds = Parser.start()
                         0: Parser.start()
                             .endianess('little')
                             .array('Sounds',{ length:function(all_vars) {
-                                console.error("ALL VARS ::",all_vars.GMGameBody.Sounds.NumberOfSounds);
+                                // console.error("ALL VARS ::",all_vars.GMGameBody.Sounds.NumberOfSounds);
                                 return all_vars.GMGameBody.Sounds.NumberOfSounds;
                             }, type: GMSound}),
 
                         1: Parser.start()
                             .endianess('little')
                             .array('GM8Sounds',{length:function(all_vars) {
-                                console.error("ALL VARS ::",all_vars.GMGameBody.Sounds.NumberOfSounds);
+                                // console.error("ALL VARS ::",all_vars.GMGameBody.Sounds.NumberOfSounds);
                                 return all_vars.GMGameBody.Sounds.NumberOfSounds;
                             }, type: GMCompressedSound})
                     }

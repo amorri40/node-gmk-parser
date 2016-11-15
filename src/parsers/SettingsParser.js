@@ -210,7 +210,6 @@ var MainSettings = Parser.start()
     .int32('IconLength')
     .buffer('Icon', {
             length:function(a) {
-                console.log(this.IconLength,a)
                 return this.IconLength;
             }})
     .int32('DisplayErrors')

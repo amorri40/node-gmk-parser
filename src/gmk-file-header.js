@@ -99,6 +99,9 @@ GMFileReader = {
     processUnEncryptedGame: function(data) {
         GMGame.zlib=require('zlib')
         GMGame.MainSettings = SettingsParser.MainSettings;
+        GMGame.Parsers = {
+            GMSound: SoundsParser.GMSound
+        }
         var parsed_gm_file = GMGame.parse(data);
         // console.error("GM File:",parsed_gm_file.GMFileHeader.version,parsed_gm_file);
         return parsed_gm_file;
