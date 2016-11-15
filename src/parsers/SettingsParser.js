@@ -53,6 +53,39 @@ var GMIncludes = Parser.start()
                  .int32('OverwriteExisting')
                  .int32('RemoveAtGameEnd')
 
+var GMConstants = Parser.start()
+                 .endianess('little')
+                 .int32('NumberOfConstants')
+                 .array('Constants',{length:function() {
+                     return this['NumberOfConstants'];
+                 }, type: GMConstant})
+module.exports.GMConstants=GMConstants;
+
+var GMCompressedTrigger = Parser.start()
+                 .endianess('little')
+    .uint32('limit')
+    .buffer('inflated_data',{
+        length:function() {
+            return this.limit
+        },
+        formatter: function(buffer) {
+            // var inflated_buffer = this.zlib.inflateSync(buffer);
+            // var parsed_data = this.MainSettings.parse(inflated_buffer);
+            // return parsed_data
+            return "TODO Compressed Triggers";
+        }
+    })
+
+var GMTriggers = Parser.start()
+                 .endianess('little')
+                 .int32('version')
+                 .int32('NumberOfTriggers')
+                //  each individual trigger is deflated (compressed)
+                 .array('Includes',{length:function() {
+                     return this['NumberOfTriggers'];
+                 }, type: GMCompressedTrigger})
+
+
 var MainSettings = Parser.start()
     .endianess('little')
     .uint32('StartFullscreen')
@@ -245,20 +278,23 @@ var MainSettings = Parser.start()
         },
         defaultChoice: Parser.start()
     })
+    .choice('lastChanged', {
+        tag: VersionCheck.is_greater_than_equal_version_800,
+        choices: {
+            0: Parser.start()
+                 .endianess('little'),
 
-    // .choice('lastChanged', {
-    //     tag: VersionCheck.is_greater_than_equal_version_800,
-    //     choices: {
-    //         0: Parser.start()
-    //              .endianess('little'),
+            1: Parser.start()
+                 .endianess('little')
+                 .int32('LastChanged')
+                 .int32('LastChanged2')
+        },
+        defaultChoice: Parser.start()
+    })
+    //
+    // # Remember the end of this is also the end of the zlib buffer in GM8!
+    //
 
-    //         1: Parser.start()
-    //              .endianess('little')
-    //              .int32('LastChanged')
-    //              .int32('LastChanged2')
-    //     },
-    //     defaultChoice: Parser.start()
-    // })
 
 
 
@@ -295,5 +331,6 @@ var GameSettings = Parser.start()
 module.exports.GameID = GameID;
 module.exports.GameSettings = GameSettings;
 module.exports.MainSettings = MainSettings;
+module.exports.GMTriggers = GMTriggers;
 
 // console.error("CODE::",MainSettings.getCode());

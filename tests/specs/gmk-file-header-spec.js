@@ -46,7 +46,7 @@ it('should open a 530 gmd file', function(done) {
         }).catch(common_catch_block);
     });
 
-    it('should open a gm7 (701) obfuscated file', function(done) {
+    it('should open a gm7 (701) obfuscated file (fire_example.gmk)', function(done) {
         this.timeout(50000);
         var file_path = './tests/gm_files/fire_example.gmk';
         var gmk_file = GMFileReader.openGmFile(file_path);
@@ -59,7 +59,7 @@ it('should open a 530 gmd file', function(done) {
         }).catch(common_catch_block);
     });
 
-    it('should open a v800 gmk file', function(done) {
+    it('should open a v800 gmk file (fpsexample.gmk)', function(done) {
         this.timeout(25000);
         var file_path = './tests/gm_files/fpsexample.gmk';
         var gmk_file = GMFileReader.openGmFile(file_path);

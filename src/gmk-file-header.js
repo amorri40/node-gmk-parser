@@ -5,6 +5,8 @@ var Promise = require("bluebird");
 var Parser = require("binary-parser").Parser;
 var readFile = Promise.promisify(fs.readFile);
 
+var VersionCheck = require("./util/VersionChecks");
+
 //
 // # Parsers
 //
@@ -36,6 +38,22 @@ var GMGameBody = Parser.start()
     .endianess('little')
     .string('GameGUID',{length:16})
     .nest('GameSettings',{type:SettingsParser.GameSettings})
+    .choice('gm8', {
+        tag: VersionCheck.is_greater_than_equal_version_800,
+        choices: {
+            0: Parser.start()
+                 .endianess('little'),
+
+            1: Parser.start()
+                 .endianess('little')
+                 .nest('Triggers',{type:SettingsParser.GMTriggers})
+                 .buffer('LastChanged',{length:8})
+                 .int32('version')
+                 .nest('Constants',{type:SettingsParser.GMConstants})
+                 .buffer('LastChanged',{length:8})
+        },
+        defaultChoice: Parser.start()
+    })
     .uint32('next')
     .uint32('next2')
 
