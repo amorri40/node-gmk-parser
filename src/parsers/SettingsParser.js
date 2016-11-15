@@ -63,18 +63,18 @@ module.exports.GMConstants=GMConstants;
 
 var GMCompressedTrigger = Parser.start()
                  .endianess('little')
-    .uint32('limit')
-    .buffer('inflated_data',{
-        length:function() {
-            return this.limit
-        },
-        formatter: function(buffer) {
-            // var inflated_buffer = this.zlib.inflateSync(buffer);
-            // var parsed_data = this.MainSettings.parse(inflated_buffer);
-            // return parsed_data
-            return "TODO Compressed Triggers";
-        }
-    })
+                .uint32('limit')
+                .buffer('inflated_data',{
+                    length:function() {
+                        return this.limit
+                    },
+                    formatter: function(buffer) {
+                        // var inflated_buffer = this.zlib.inflateSync(buffer);
+                        // var parsed_data = this.MainSettings.parse(inflated_buffer);
+                        // return parsed_data
+                        return "TODO Compressed Triggers";
+                    }
+                })
 
 var GMTriggers = Parser.start()
                  .endianess('little')

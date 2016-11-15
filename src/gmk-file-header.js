@@ -13,6 +13,7 @@ var VersionCheck = require("./util/VersionChecks");
 var SkipParser = require('./parsers/SkipParser.js');
 var GMKEncryption = require('./parsers/GMKEncryption.js');
 var SettingsParser = require('./parsers/SettingsParser.js');
+var SoundsParser = require('./parsers/SoundsParser.js');
 
 var GMFileReader;
 
@@ -54,6 +55,7 @@ var GMGameBody = Parser.start()
         },
         defaultChoice: Parser.start()
     })
+    .nest('Sounds',{type:SoundsParser.GMSounds})
     .uint32('next')
     .uint32('next2')
 
