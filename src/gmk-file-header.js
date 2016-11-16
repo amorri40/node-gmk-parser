@@ -14,6 +14,7 @@ var SkipParser = require('./parsers/SkipParser.js');
 var GMKEncryption = require('./parsers/GMKEncryption.js');
 var SettingsParser = require('./parsers/SettingsParser.js');
 var SoundsParser = require('./parsers/SoundsParser.js');
+var SpritesParser = require('./parsers/SpritesParser.js');
 
 var GMFileReader;
 
@@ -56,6 +57,7 @@ var GMGameBody = Parser.start()
         defaultChoice: Parser.start()
     })
     .nest('Sounds',{type:SoundsParser.GMSounds})
+    .nest('Sprites',{type:SpritesParser.GMSprites})
     .uint32('next')
     .uint32('next2')
 
@@ -91,6 +93,7 @@ GMFileReader = {
             var unencrypted_data = GMKEncryption.unencryptFullGame(game_header,data);
             return GMFileReader.processUnEncryptedGame(unencrypted_data);
         }
+
         return GMFileReader.processUnEncryptedGame(data);
     },
     //
@@ -100,8 +103,10 @@ GMFileReader = {
         GMGame.zlib=require('zlib')
         GMGame.MainSettings = SettingsParser.MainSettings;
         GMGame.Parsers = {
-            GMSound: SoundsParser.GMSound
+            GMSound: SoundsParser.GMSound,
+            GMSprite: SpritesParser.GMSprite
         }
+        fs.writeFile("./parserGenCode.js",GMGame.getCode());
         var parsed_gm_file = GMGame.parse(data);
         // console.error("GM File:",parsed_gm_file.GMFileHeader.version,parsed_gm_file);
         return parsed_gm_file;
