@@ -7,8 +7,7 @@ var ResourceName = "Sprite"
 var ResourcesName = ResourceName+"s";
 var GMResourceName = "GM"+ResourceName;
 
-var NullParser = Parser.start()
-                            .endianess('little')
+
 //
 // # stdoutmessage - used for debugging
 //  e.g .buffer('stdout', {length: stdoutmessage})
@@ -29,19 +28,15 @@ var GMSubImage = Parser.start()
                     choices: {
                         0: Parser.start()
                             .endianess('little')
-                            .uint32('isvalid')
+                            .int32('isvalid')
                             .choice('data', {
-                                tag: function(all_vars) {
-                            return this.isvalid !== -1?1:0
-                            },
+                                tag: Common.isValid,
                                 choices: {
                                     1: Parser.start()
                                         .endianess('little')
                                         .nest('Image',{type:Common.GMString})
                                 },
-                                defaultChoice:
-                                    Parser.start()
-                                            .endianess('little')
+                                defaultChoice: Common.NullParser
                             }),
 
                         1: Parser.start()
@@ -60,9 +55,7 @@ var GMSpriteData = Parser.start()
                 .choice('lastChanged', {
                     tag: VersionCheck.is_greater_than_equal_version_800,
                     choices: {
-                        0: Parser.start()
-                            .endianess('little'),
-
+                        0: Common.NullParser,
                         1: Parser.start()
                             .endianess('little')
                             .buffer('LastChanged',{length:8})
@@ -72,9 +65,7 @@ var GMSpriteData = Parser.start()
                 .choice('data', {
                     tag: VersionCheck.is_less_than_800,
                     choices: {
-                        0: Parser.start()
-                            .endianess('little'),
-
+                        0: Common.NullParser,
                         1: Parser.start()
                             .endianess('little')
                             .int32('width')
@@ -97,7 +88,7 @@ var GMSpriteData = Parser.start()
                 .choice('data', {
                     tag: VersionCheck.is_greater_than_equal_800,
                     choices: {
-                        0: NullParser,
+                        0: Common.NullParser,
                         1: Parser.start()
                             .endianess('little')
                             .int32('MaskShape')
@@ -113,18 +104,19 @@ var GMSpriteData = Parser.start()
 
 var GMSprite = Parser.start()
                 .endianess('little')
-                .uint32('isvalid')
+                .int32('isvalid')
 
                 .choice('gmspritedata', {
-                    tag: function(all_vars) {
+                    tag: function(all_vars,offset) {
+                        console.error("ISVALID :: ",this.isvalid,offset);
                         return this.isvalid;
-                    },
+                    }, // can't seem to change to Common.isValid...'
                     choices: {
                         1: Parser.start()
                             .endianess('little')
                             .nest('Name',{type:GMSpriteData})
                     },
-                    defaultChoice: NullParser
+                    defaultChoice: Common.NullParser
                 })
 module.exports.GMSprite = GMSprite;
 
@@ -143,9 +135,9 @@ var GMCompressedSprite = Parser.start()
 var GMSprites = Parser.start()
                  .endianess('little')
                  .int32('version')
-                 .int32('NumberOfSprites')
+                 .int32('NumberOf'+ResourcesName)
                 //  each individual resource is deflated (compressed) in gm8
-                .choice('Sprites', {
+                .choice(ResourcesName, {
                     tag: VersionCheck.is_greater_than_equal_version_800,
                     choices: {
                         0: Parser.start()

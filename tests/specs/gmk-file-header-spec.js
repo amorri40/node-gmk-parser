@@ -1,6 +1,7 @@
 'use strict';
 var expect = require('chai').expect;
 var assert = require('chai').assert;
+var _ = require('lodash');
 
 describe('Game Maker Header', function() {
     var GMFileReader = require('../../src/gmk-file-header.js');
@@ -46,18 +47,26 @@ it('should open a 530 gmd file', function(done) {
         }).catch(common_catch_block);
     });
 
-    it('should open a gm7 (701) obfuscated file (fire_example.gmk)', function(done) {
+    var gm7_files = ["fire_example.gmk", "fire_example_2.gmk"];
+
+    _.each(gm7_files, function(gm_file) {
+
+        it(`should open a gm7 (701) obfuscated file (${gm_file})`, function(done) {
         this.timeout(50000);
-        var file_path = './tests/gm_files/fire_example.gmk';
+        var file_path = `./tests/gm_files/${gm_file}`;
         var gmk_file = GMFileReader.openGmFile(file_path);
 
         gmk_file.then(function asserts (actual) {
             common_expects(actual,file_path);
             expect(actual.GMFileHeader.version).to.be.equal(701);
+            if ( gm_file === "fire_example.gmk")
             expect(actual.GMFileHeader.encryption.seed).to.be.equal(16085);
             done();
         }).catch(common_catch_block);
     });
+    })
+
+
 
     it('should open a v800 gmk file (fpsexample.gmk)', function(done) {
         this.timeout(25000);
