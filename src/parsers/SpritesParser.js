@@ -52,15 +52,7 @@ var GMSubImage = Parser.start()
 var GMSpriteData = Parser.start()
                 .endianess('little')
                 .nest('Name',{type:Common.GMString})
-                .choice('lastChanged', {
-                    tag: VersionCheck.is_greater_than_equal_version_800,
-                    choices: {
-                        0: Common.NullParser,
-                        1: Parser.start()
-                            .endianess('little')
-                            .buffer('LastChanged',{length:8})
-                    }
-                })
+                .nest('gm8',{type:Common.GM8LastChanged})
                 .uint32('version')
                 .choice('data', {
                     tag: VersionCheck.is_less_than_800,

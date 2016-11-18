@@ -21,34 +21,6 @@ var stdoutmessage = eval(`function stdoutmessage (all_vars) {
     return 0;
 }; stdoutmessage;`);
 
-var GMSubImage = Parser.start()
-                .endianess('little')
-                .choice('data', {
-                    tag: VersionCheck.is_greater_than_equal_800,
-                    choices: {
-                        0: Parser.start()
-                            .endianess('little')
-                            .int32('isvalid')
-                            .choice('data', {
-                                tag: Common.isValid,
-                                choices: {
-                                    1: Parser.start()
-                                        .endianess('little')
-                                        .nest('Image',{type:Common.GMString})
-                                },
-                                defaultChoice: Common.NullParser
-                            }),
-
-                        1: Parser.start()
-                            .endianess('little')
-                            .int32('subver')
-                            .int32('width')
-                            .int32('height')
-                            .nest('Image',{type:Common.GMString})
-
-                    }
-                })
-
 var TileSettingsParser = Parser.start()
                 .endianess('little')
                 .int32('useAsTileSet')
@@ -66,16 +38,7 @@ var BackgroundImage = Parser.start()
 module.exports[GMResourceName+"Data"] = Parser.start()
                 .endianess('little')
                 .nest('Name',{type:Common.GMString})
-
-                .choice('lastChanged', {
-                    tag: VersionCheck.is_greater_than_equal_version_800,
-                    choices: {
-                        0: Common.NullParser,
-                        1: Parser.start()
-                            .endianess('little')
-                            .buffer('LastChanged',{length:8})
-                    }
-                })
+                .nest('gm8',{type:Common.GM8LastChanged})
                 .uint32('version')
                 .buffer('stdout', {length: stdoutmessage})
                 .choice('data', {
@@ -132,16 +95,18 @@ module.exports[GMResourceName] = Parser.start()
                     defaultChoice: Common.NullParser
                 })
 
+var uncompress_formatter = eval(`function uncompress_formatter(buffer) {
+                        var inflated_buffer = this.zlib.inflateSync(buffer);
+                        var parsed_data = this.Parsers.${GMResourceName}.parse(inflated_buffer);
+                        return parsed_data
+                    } uncompress_formatter`);
+
 var GMCompressedResource = Parser.start()
                 .endianess('little')
                 .int32('limit')
                 .buffer('inflated_data',{
                     length: 'limit',
-                    formatter: function(buffer) {
-                        var inflated_buffer = this.zlib.inflateSync(buffer);
-                        var parsed_data = this.Parsers.GMBackground.parse(inflated_buffer);
-                        return parsed_data
-                    }
+                    formatter: uncompress_formatter
                 })
 
 var get_number_of_resources = eval(`function get_number_of_resources(all_vars) {
