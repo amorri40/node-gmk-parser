@@ -3,10 +3,10 @@ var GMKZlib = require("./GMKZlib.js");
 var VersionCheck = require("../util/VersionChecks");
 var Common = require("../util/CommonTypes");
 
-var ResourceName = "Sprite"
+var ResourceName = "Background"
 var ResourcesName = ResourceName+"s";
 var GMResourceName = "GM"+ResourceName;
-
+var GMResourcesName = GMResourceName+"s";
 
 //
 // # stdoutmessage - used for debugging
@@ -49,9 +49,24 @@ var GMSubImage = Parser.start()
                     }
                 })
 
-var GMSpriteData = Parser.start()
+var TileSettingsParser = Parser.start()
+                .endianess('little')
+                .int32('useAsTileSet')
+                .int32('tileWidth')
+                .int32('tileHeight')
+                .int32('hOffset')
+                .int32('vOffset')
+                .int32('hSep')
+                .int32('vSep')
+
+var BackgroundImage = Parser.start()
+                        .endianess('little')
+                        .nest('Image',{type:Common.GMString})
+
+module.exports[GMResourceName+"Data"] = Parser.start()
                 .endianess('little')
                 .nest('Name',{type:Common.GMString})
+
                 .choice('lastChanged', {
                     tag: VersionCheck.is_greater_than_equal_version_800,
                     choices: {
@@ -62,72 +77,69 @@ var GMSpriteData = Parser.start()
                     }
                 })
                 .uint32('version')
+                .buffer('stdout', {length: stdoutmessage})
                 .choice('data', {
-                    tag: VersionCheck.is_less_than_800,
+                    tag: VersionCheck.is_less_than_710,
                     choices: {
-                        0: Common.NullParser,
+                        0: Parser.start()
+                            .endianess('little')
+                            .nest('Name',{type:TileSettingsParser})
+                            .int32('version')
+                            .int32('width')
+                            .int32('height')
+                            .choice('data', {
+                                tag: function() {
+                                    return (this.width !=0 && this.height !=0)?1:0
+                                }, choices: {
+                                    0:Common.NullParser,
+                                    1:BackgroundImage
+                                }
+                            }),
                         1: Parser.start()
                             .endianess('little')
                             .int32('width')
                             .int32('height')
-                            .int32('bbLeft')
-                            .int32('bbRight')
-                            .int32('bbBottom')
-                            .int32('bbTop')
                             .int32('transparent')
                             .int32('smoothEdges')
                             .int32('preload')
-                            .int32('bbMode')
-                            .int32('precise')
+                            .nest('Name',{type:TileSettingsParser})
+                            .choice('data', {
+                                tag: Common.isValid,
+                                choices: {
+                                    1: BackgroundImage
+                                },
+                                defaultChoice: Common.NullParser
+                            }),
                     }
                 })
-                .int32('originX')
-                .int32('originY')
-                .int32('numberOfSubImages')
-                .array('Sprites',{ length:'numberOfSubImages', type: GMSubImage})
-                .choice('data', {
-                    tag: VersionCheck.is_greater_than_equal_800,
-                    choices: {
-                        0: Common.NullParser,
-                        1: Parser.start()
-                            .endianess('little')
-                            .int32('MaskShape')
-                            .int32('AlphaTolerance')
-                            .int32('SeperateMask')
-                            .int32('SpriteBBMode')
-                            .int32('bbLeft')
-                            .int32('bbRight')
-                            .int32('bbBottom')
-                            .int32('bbTop')
-                    } })
+
                 // .buffer('stdout', {length: stdoutmessage})
 
-var GMSprite = Parser.start()
+module.exports[GMResourceName] = Parser.start()
                 .endianess('little')
                 .int32('isvalid')
 
-                .choice('gmspritedata', {
+                .choice('data', {
                     tag: function(all_vars,offset) {
-                        console.error("ISVALID :: ",this.isvalid,offset);
+                        console.error(" Background ISVALID :: ",this.isvalid,offset);
                         return this.isvalid;
                     }, // can't seem to change to Common.isValid...'
                     choices: {
                         1: Parser.start()
                             .endianess('little')
-                            .nest('Name',{type:GMSpriteData})
+                            .nest('Name',{type:module.exports[GMResourceName+"Data"]})
                     },
                     defaultChoice: Common.NullParser
                 })
-module.exports.GMSprite = GMSprite;
 
-var GMCompressedSprite = Parser.start()
+var GMCompressedResource = Parser.start()
                 .endianess('little')
                 .int32('limit')
                 .buffer('inflated_data',{
                     length: 'limit',
                     formatter: function(buffer) {
                         var inflated_buffer = this.zlib.inflateSync(buffer);
-                        var parsed_data = this.Parsers.GMSprite.parse(inflated_buffer);
+                        var parsed_data = this.Parsers.GMBackground.parse(inflated_buffer);
                         return parsed_data
                     }
                 })
@@ -136,7 +148,7 @@ var get_number_of_resources = eval(`function get_number_of_resources(all_vars) {
                                 return all_vars.GMGameBody.${ResourcesName}.NumberOf${ResourcesName};
                             } get_number_of_resources`);
 
-var GMSprites = Parser.start()
+module.exports[GMResourcesName] = Parser.start()
                  .endianess('little')
                  .int32('version')
                  .int32('NumberOf'+ResourcesName)
@@ -146,12 +158,10 @@ var GMSprites = Parser.start()
                     choices: {
                         0: Parser.start()
                             .endianess('little')
-                            .array('Sprites',{ length:get_number_of_resources, type: GMSprite}),
+                            .array(ResourcesName,{ length:get_number_of_resources, type: module.exports[GMResourceName]}),
 
                         1: Parser.start()
                             .endianess('little')
-                            .array('GM8Sprites',{length:get_number_of_resources, type: GMCompressedSprite})
+                            .array(ResourcesName,{length:get_number_of_resources, type: GMCompressedResource})
                     }
                 })
-
-module.exports.GMSprites = GMSprites;
