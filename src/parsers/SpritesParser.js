@@ -8,20 +8,6 @@ var ResourceName = "Sprite"
 var ResourcesName = ResourceName+"s";
 var GMResourceName = "GM"+ResourceName;
 
-
-//
-// # stdoutmessage - used for debugging
-//  e.g .buffer('stdout', {length: stdoutmessage})
-//
-var stdoutmessage = eval(`function stdoutmessage (all_vars) {
-    if (all_vars.GMGameBody)
-    console.error("${ResourcesName} Status so far :: ",JSON.stringify(all_vars.GMGameBody.${ResourcesName}));
-    else
-        console.error("${ResourcesName} Status so far :: ",JSON.stringify(all_vars));
-
-    return 0;
-}; stdoutmessage;`);
-
 var GMSubImage = Parser.start()
                 .endianess('little')
                 .choice('data', {
@@ -50,7 +36,7 @@ var GMSubImage = Parser.start()
                     }
                 })
 
-var GMSpriteData = Parser.start()
+module.exports[GMResourceName+"Data"] = Parser.start()
                 .endianess('little')
                 .nest('Name',{type:Common.GMString})
                 .nest('gm8',{type:Common.GM8LastChanged})
@@ -93,43 +79,7 @@ var GMSpriteData = Parser.start()
                             .int32('bbBottom')
                             .int32('bbTop')
                     } })
-                // .buffer('stdout', {length: stdoutmessage})
+                // .nest('stdout', {type: Common.NewStdoutMessage(ResourcesName)})
 
-var GMSprite = Parser.start()
-                .endianess('little')
-                .int32('isvalid')
-
-                .choice('gmspritedata', {
-                    tag: CommonFunctions.is_valid_check, // can't seem to change to Common.isValid...'
-                    choices: {
-                        1: Parser.start()
-                            .endianess('little')
-                            .nest('Name',{type:GMSpriteData})
-                    },
-                    defaultChoice: Common.NullParser
-                })
-module.exports.GMSprite = GMSprite;
-
-var get_number_of_resources = eval(`function get_number_of_resources(all_vars) {
-                                return all_vars.GMGameBody.${ResourcesName}.NumberOf${ResourcesName};
-                            } get_number_of_resources`);
-
-var GMSprites = Parser.start()
-                 .endianess('little')
-                 .int32('version')
-                 .int32('NumberOf'+ResourcesName)
-                //  each individual resource is deflated (compressed) in gm8
-                .choice(ResourcesName, {
-                    tag: VersionCheck.is_greater_than_equal_version_800,
-                    choices: {
-                        0: Parser.start()
-                            .endianess('little')
-                            .array('Sprites',{ length:get_number_of_resources, type: GMSprite}),
-
-                        1: Parser.start()
-                            .endianess('little')
-                            .array('GM8Sprites',{length:get_number_of_resources, type: Common.NewGMCompressedResource(GMResourceName)})
-                    }
-                })
-
-module.exports.GMSprites = GMSprites;
+module.exports[GMResourceName] = Common.NewValidCheckerForGMResource(module.exports[GMResourceName+"Data"]);
+module.exports.GMSprites = Common.NewGMResource(ResourceName, ResourcesName, GMResourceName, module.exports[GMResourceName]);

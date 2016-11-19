@@ -9,19 +9,6 @@ var ResourcesName = ResourceName+"s";
 var GMResourceName = "GM"+ResourceName;
 var GMResourcesName = GMResourceName+"s";
 
-//
-// # stdoutmessage - used for debugging
-//  e.g .buffer('stdout', {length: stdoutmessage})
-//
-var stdoutmessage = eval(`function stdoutmessage (all_vars) {
-    if (all_vars.GMGameBody)
-    console.error("${ResourcesName} Status so far :: ",JSON.stringify(all_vars.GMGameBody.${ResourcesName}));
-    else
-        console.error("${ResourcesName} Status so far :: ",JSON.stringify(all_vars));
-
-    return 0;
-}; stdoutmessage;`);
-
 var TileSettingsParser = Parser.start()
                 .endianess('little')
                 .int32('useAsTileSet')
@@ -41,7 +28,6 @@ module.exports[GMResourceName+"Data"] = Parser.start()
                 .nest('Name',{type:Common.GMString})
                 .nest('gm8',{type:Common.GM8LastChanged})
                 .uint32('version')
-                // .buffer('stdout', {length: stdoutmessage})
                 .choice('data', {
                     tag: VersionCheck.is_less_than_710,
                     choices: {
@@ -84,41 +70,7 @@ module.exports[GMResourceName+"Data"] = Parser.start()
                             }),
                     }
                 })
+                //.nest('stdout', {type: Common.NewStdoutMessage(ResourcesName)})
 
-                // .buffer('stdout', {length: stdoutmessage})
-
-module.exports[GMResourceName] = Parser.start()
-                .endianess('little')
-                .int32('isvalid')
-
-                .choice('data', {
-                    tag: CommonFunctions.is_valid_check, // can't seem to change to Common.isValid...'
-                    choices: {
-                        1: Parser.start()
-                            .endianess('little')
-                            .nest('Name',{type:module.exports[GMResourceName+"Data"]})
-                    },
-                    defaultChoice: Common.NullParser
-                })
-
-var get_number_of_resources = eval(`function get_number_of_resources(all_vars) {
-                                return all_vars.GMGameBody.${ResourcesName}.NumberOf${ResourcesName};
-                            } get_number_of_resources`);
-
-module.exports[GMResourcesName] = Parser.start()
-                 .endianess('little')
-                 .int32('version')
-                 .int32('NumberOf'+ResourcesName)
-                //  each individual resource is deflated (compressed) in gm8
-                .choice(ResourcesName, {
-                    tag: VersionCheck.is_greater_than_equal_version_800,
-                    choices: {
-                        0: Parser.start()
-                            .endianess('little')
-                            .array(ResourcesName,{ length:get_number_of_resources, type: module.exports[GMResourceName]}),
-
-                        1: Parser.start()
-                            .endianess('little')
-                            .array(ResourcesName,{length:get_number_of_resources, type: Common.NewGMCompressedResource(GMResourceName)})
-                    }
-                })
+module.exports[GMResourceName] = Common.NewValidCheckerForGMResource(module.exports[GMResourceName+"Data"]);
+module.exports[GMResourcesName] = Common.NewGMResource(ResourceName, ResourcesName, GMResourceName, module.exports[GMResourceName]);
