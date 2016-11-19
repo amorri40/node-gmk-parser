@@ -101,20 +101,6 @@ module.exports[GMResourceName] = Parser.start()
                     defaultChoice: Common.NullParser
                 })
 
-var uncompress_formatter = eval(`function uncompress_formatter(buffer) {
-                        var inflated_buffer = this.zlib.inflateSync(buffer);
-                        var parsed_data = this.Parsers.${GMResourceName}.parse(inflated_buffer);
-                        return parsed_data
-                    } uncompress_formatter`);
-
-var GMCompressedResource = Parser.start()
-                .endianess('little')
-                .int32('limit')
-                .buffer('inflated_data',{
-                    length: 'limit',
-                    formatter: uncompress_formatter
-                })
-
 var get_number_of_resources = eval(`function get_number_of_resources(all_vars) {
                                 return all_vars.GMGameBody.${ResourcesName}.NumberOf${ResourcesName};
                             } get_number_of_resources`);
@@ -133,6 +119,6 @@ module.exports[GMResourcesName] = Parser.start()
 
                         1: Parser.start()
                             .endianess('little')
-                            .array(ResourcesName,{length:get_number_of_resources, type: GMCompressedResource})
+                            .array(ResourcesName,{length:get_number_of_resources, type: Common.NewGMCompressedResource(GMResourceName)})
                     }
                 })

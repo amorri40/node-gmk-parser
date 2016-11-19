@@ -31,3 +31,23 @@ module.exports.GM8LastChanged = Parser.start()
                             .buffer('LastChanged',{length:8})
                     }
                 })
+
+module.exports.NewGMCompressedResource = function(GMResourceName) {
+    //
+    // # Deal with GM8 compression
+    //
+    var uncompress_formatter = eval(`function uncompress_formatter(buffer) {
+                            var inflated_buffer = this.zlib.inflateSync(buffer);
+                            var parsed_data = this.Parsers.${GMResourceName}.parse(inflated_buffer);
+                            return parsed_data
+                        } uncompress_formatter`);
+
+    var GMCompressedResource = Parser.start()
+                    .endianess('little')
+                    .int32('limit')
+                    .buffer('inflated_data',{
+                        length: 'limit',
+                        formatter: uncompress_formatter
+                    })
+    return GMCompressedResource;
+}

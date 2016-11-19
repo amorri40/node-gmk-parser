@@ -110,18 +110,6 @@ var GMSprite = Parser.start()
                 })
 module.exports.GMSprite = GMSprite;
 
-var GMCompressedSprite = Parser.start()
-                .endianess('little')
-                .int32('limit')
-                .buffer('inflated_data',{
-                    length: 'limit',
-                    formatter: function(buffer) {
-                        var inflated_buffer = this.zlib.inflateSync(buffer);
-                        var parsed_data = this.Parsers.GMSprite.parse(inflated_buffer);
-                        return parsed_data
-                    }
-                })
-
 var get_number_of_resources = eval(`function get_number_of_resources(all_vars) {
                                 return all_vars.GMGameBody.${ResourcesName}.NumberOf${ResourcesName};
                             } get_number_of_resources`);
@@ -140,7 +128,7 @@ var GMSprites = Parser.start()
 
                         1: Parser.start()
                             .endianess('little')
-                            .array('GM8Sprites',{length:get_number_of_resources, type: GMCompressedSprite})
+                            .array('GM8Sprites',{length:get_number_of_resources, type: Common.NewGMCompressedResource(GMResourceName)})
                     }
                 })
 
