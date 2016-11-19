@@ -25,21 +25,9 @@ var EventParser = Parser.start()
 var EventsParser = Parser.start()
                 .endianess('little')
                 .array('events',{type:EventParser, readUntil: function(item,buffer) {
-                    // console.error("Read ahead :: ",item, item.isvalid === -1);
+                    console.error("Read ahead :: ",item, item.isvalid === -1);
                     return item.isvalid === -1;
                 }})
-                // .int32('isvalid')
-                // .choice('data', {
-                //     tag: function() {
-                //         return this.isvalid !==-1?1:0;
-                // },
-                //     choices: {
-                //         1: Parser.start()
-                //             .endianess('little')
-                //             .nest('data',{type:EventParser})
-                //     },
-                //     defaultChoice: Common.NullParser
-                // })
 
 
 module.exports[GMResourceName+"Data"] = Parser.start()
@@ -55,7 +43,11 @@ module.exports[GMResourceName+"Data"] = Parser.start()
                 .int32('parent')
                 .int32('mask')
                 .int32('numberOfEvents')
-                .array('events',{type:EventsParser,length:'numberOfEvents'})
+                .array('events',{type:EventsParser,length: function(all_vars) {
+                    return this.numberOfEvents+1;
+                }
+
+                })
                 // .nest('stdout', {type: Common.NewStdoutMessage(ResourcesName)})
 
 module.exports[GMResourceName] = Common.NewValidCheckerForGMResource(module.exports[GMResourceName+"Data"]);

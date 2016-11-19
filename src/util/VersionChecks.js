@@ -9,7 +9,7 @@ var possibilities_to_generate = {
     "is_less_than_equal" : "<="
 }
 
-var possible_versions=["400", "530","600", "710", "800"];
+var possible_versions=["400", "520", "530","600", "710", "800"];
 
 _.each(possibilities_to_generate, function(comparison_operator, name) {
 
@@ -21,8 +21,10 @@ _.each(possibilities_to_generate, function(comparison_operator, name) {
             //
             // # 800 is a special case as it spawns a new parser which won't have previous properties
             //
-            if (!all_vars.GMFileHeader)
+            if (!all_vars.GMFileHeader && !this.version)
             current_version = 800;
+            else if (this.version)
+            current_version=this.version;
             else
             current_version = all_vars.GMFileHeader.version;
             return  current_version ${comparison_operator} ${version}? 1:0;

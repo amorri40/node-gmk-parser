@@ -23,7 +23,7 @@ describe('Game Maker Header', function() {
         expect(GMFileReader).to.not.be.undefined;
     });
 
-it('should open a 530 gmd file', function(done) {
+it('should open a 530 gmd file (pathtracer.gmd)', function(done) {
         this.timeout(25000);
         var file_path = './tests/gm_files/pathtracer.gmd';
         var gmk_file = GMFileReader.openGmFile(file_path);
