@@ -4,7 +4,7 @@ var VersionCheck = require("../util/VersionChecks");
 var Common = require("../util/CommonTypes");
 var CommonFunctions = require("../util/CommonFunctions");
 
-var ResourceName = "Background"
+var ResourceName = "Path"
 var ResourcesName = ResourceName+"s";
 var GMResourceName = "GM"+ResourceName;
 var GMResourcesName = GMResourceName+"s";
@@ -36,71 +36,45 @@ var BackgroundImage = Parser.start()
                         .endianess('little')
                         .nest('Image',{type:Common.GMString})
 
+var GMPathPoint =  Parser.start()
+                        .endianess('little')
+                        .nest('x',{type:Common.GMDouble})
+                        .nest('y',{type:Common.GMDouble})
+                        .nest('speed',{type:Common.GMDouble})
+
 module.exports[GMResourceName+"Data"] = Parser.start()
                 .endianess('little')
                 .nest('Name',{type:Common.GMString})
                 .nest('gm8',{type:Common.GM8LastChanged})
                 .uint32('version')
-                // .buffer('stdout', {length: stdoutmessage})
-                .choice('data', {
-                    tag: VersionCheck.is_less_than_710,
-                    choices: {
-                        0: Parser.start()
-                            .endianess('little')
-                            .nest('TileSettings',{type:TileSettingsParser})
-                            .int32('version')
-                            .int32('width')
-                            .int32('height')
-                            .choice('data', {
-                                tag: function() {
-                                    return (this.width !==0 && this.height !==0)?1:0
-                                }, choices: {
-                                    0:Common.NullParser,
-                                    1:BackgroundImage
-                                }
-                            }),
-                        1: Parser.start()
-                            .endianess('little')
-                            .int32('width')
-                            .int32('height')
-                            .int32('transparent')
-                            .int32('smoothEdges')
-                            .int32('preload')
-                            .nest('Name',{type:TileSettingsParser})
-                            .int32('isvalid')
-                            .choice('data', {
-                                tag: 'isvalid',
-                                choices: {
-                                    1: Parser.start()
-                                        .endianess('little')
-                                        .int32('isvalid')
-                                        .choice('data', {tag:'isvalid',
-                                        choices: {
-                                            10: BackgroundImage
-                                        }
-                                    })
-                                },
-                                defaultChoice: Common.NullParser
-                            }),
-                    }
-                })
+                .int32('smooth')
+                .int32('closed')
+                .int32('precision')
+                .int32('backgroundRoom')
+                .int32('snapX')
+                .int32('snapY')
+                .int32('numberOfPoints')
+                .array('Points',{length:'numberOfPoints', type: GMPathPoint})
 
+                .buffer('stdout', {length: stdoutmessage})
                 // .buffer('stdout', {length: stdoutmessage})
 
 module.exports[GMResourceName] = Parser.start()
                 .endianess('little')
                 .int32('isvalid')
-
                 .choice('data', {
                     tag: CommonFunctions.is_valid_check, // can't seem to change to Common.isValid...'
                     choices: {
                         1: Parser.start()
                             .endianess('little')
-                            .nest('Name',{type:module.exports[GMResourceName+"Data"]})
+                            .nest('data',{type:module.exports[GMResourceName+"Data"]})
                     },
                     defaultChoice: Common.NullParser
                 })
 
+//
+// # Deal with GM8 compression
+//
 var uncompress_formatter = eval(`function uncompress_formatter(buffer) {
                         var inflated_buffer = this.zlib.inflateSync(buffer);
                         var parsed_data = this.Parsers.${GMResourceName}.parse(inflated_buffer);

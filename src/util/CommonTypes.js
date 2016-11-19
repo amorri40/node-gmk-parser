@@ -13,6 +13,12 @@ module.exports.isValid = function(all_vars) {
                             return this.isvalid !== -1?1:0
                         }
 
+module.exports.GMDouble = Parser.start()
+                .endianess('little')
+                .buffer('value',{length:8, formatter: function doubleFormatter(buffer) {
+                    var double_value = buffer.readDoubleLE(0);
+                    return double_value;
+                }} )
 
 module.exports.GM8LastChanged = Parser.start()
                 .endianess('little')

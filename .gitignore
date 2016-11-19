@@ -1,3 +1,6 @@
 node_modules
 .DS_Store
 tests/gm_files/*.json
+*.gb1
+parserGenCode.js
+output.txt

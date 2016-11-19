@@ -2,6 +2,7 @@ var Parser = require("binary-parser").Parser;
 var GMKZlib = require("./GMKZlib.js");
 var VersionCheck = require("../util/VersionChecks");
 var Common = require("../util/CommonTypes");
+var CommonFunctions = require("../util/CommonFunctions");
 
 var ResourceName = "Sprite"
 var ResourcesName = ResourceName+"s";
@@ -99,10 +100,7 @@ var GMSprite = Parser.start()
                 .int32('isvalid')
 
                 .choice('gmspritedata', {
-                    tag: function(all_vars,offset) {
-                        console.error("ISVALID :: ",this.isvalid,offset);
-                        return this.isvalid;
-                    }, // can't seem to change to Common.isValid...'
+                    tag: CommonFunctions.is_valid_check, // can't seem to change to Common.isValid...'
                     choices: {
                         1: Parser.start()
                             .endianess('little')

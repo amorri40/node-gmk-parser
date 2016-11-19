@@ -16,6 +16,7 @@ var SettingsParser = require('./parsers/SettingsParser.js');
 var SoundsParser = require('./parsers/SoundsParser.js');
 var SpritesParser = require('./parsers/SpritesParser.js');
 var BackgroundsParser = require('./parsers/BackgroundsParser.js');
+var PathsParser = require('./parsers/PathsParser.js');
 
 var GMFileReader;
 
@@ -60,6 +61,7 @@ var GMGameBody = Parser.start()
     .nest('Sounds',{type:SoundsParser.GMSounds})
     .nest('Sprites',{type:SpritesParser.GMSprites})
     .nest('Backgrounds',{type:BackgroundsParser.GMBackgrounds})
+    .nest('Paths',{type:PathsParser.GMPaths})
     .uint32('next')
     .uint32('next2')
 
