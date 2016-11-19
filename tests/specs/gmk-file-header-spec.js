@@ -35,19 +35,26 @@ it('should open a 530 gmd file', function(done) {
         }).catch(common_catch_block);
     });
 
-    it('should open a gm6 (600) file', function(done) {
-        this.timeout(50000);
-        var file_path = './tests/gm_files/1945v3.gm6';
-        var gmk_file = GMFileReader.openGmFile(file_path);
+    var gm6_files = [
+        "1945v3.gm6"
+        ]
+    _.each(gm6_files, function(gm_file) {
+        it(`should open a gm6 (600) file (${gm_file})`, function(done) {
+            this.timeout(50000);
+            var file_path = `./tests/gm_files/${gm_file}`;
+            var gmk_file = GMFileReader.openGmFile(file_path);
 
-        gmk_file.then(function asserts (actual) {
-            common_expects(actual, file_path);
-            expect(actual.GMFileHeader.version).to.be.equal(600);
-            done();
-        }).catch(common_catch_block);
+            gmk_file.then(function asserts (actual) {
+                common_expects(actual, file_path);
+                expect(actual.GMFileHeader.version).to.be.equal(600);
+                done();
+            }).catch(common_catch_block);
+        });
     });
 
-    var gm7_files = ["fire_example.gmk", "fire_example_2.gmk"];
+    var gm7_files = [//"fire_example.gmk",
+    "fire_example_2.gmk"
+    ];
 
     _.each(gm7_files, function(gm_file) {
 
@@ -66,11 +73,11 @@ it('should open a 530 gmd file', function(done) {
     });
     })
 
-
-
-    it('should open a v800 gmk file (fpsexample.gmk)', function(done) {
+var gm8_files = ["fpsexample.gmk", "Tetris.gmk"];
+ _.each(gm8_files, function(gm_file) {
+    it(`should open a gm8 (800) compressed file (${gm_file})`, function(done) {
         this.timeout(25000);
-        var file_path = './tests/gm_files/fpsexample.gmk';
+        var file_path = `./tests/gm_files/${gm_file}`;
         var gmk_file = GMFileReader.openGmFile(file_path);
 
         gmk_file.then(function asserts (actual) {
@@ -80,4 +87,6 @@ it('should open a 530 gmd file', function(done) {
             done();
         }).catch(common_catch_block);
     });
+ });
+
 });

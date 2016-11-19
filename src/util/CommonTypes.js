@@ -60,9 +60,9 @@ var StdoutMessage = function(ResourcesName) {
     //
     var stdoutmessage = eval(`function stdoutmessage (all_vars) {
         if (all_vars.GMGameBody)
-            console.error("${ResourcesName} Status so far :: ",JSON.stringify(all_vars.GMGameBody.${ResourcesName}));
+            console.error("${ResourcesName} Status so far :: ",JSON.stringify(all_vars.GMGameBody.${ResourcesName}), " :: ${ResourcesName} Status so far");
         else
-            console.error("${ResourcesName} Status so far :: ",JSON.stringify(all_vars));
+            console.error("${ResourcesName} Status so far :: ",JSON.stringify(all_vars), " :: ${ResourcesName} Status so far");
         return 0;
     }; stdoutmessage;`);
     return stdoutmessage;

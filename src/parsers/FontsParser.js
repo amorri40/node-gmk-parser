@@ -25,7 +25,7 @@ module.exports[GMResourceName+"Data"] = Parser.start()
                 .int8('chatSet')
                 .int8('antiAlias')
                 .int32('range2')
-                .nest('stdout', {type: Common.NewStdoutMessage(ResourcesName)})
+                // .nest('stdout', {type: Common.NewStdoutMessage(ResourcesName)})
 
 module.exports[GMResourceName] = Common.NewValidCheckerForGMResource(module.exports[GMResourceName+"Data"]);
 module.exports[GMResourcesName] = Common.NewGMResource(ResourceName, ResourcesName, GMResourceName, module.exports[GMResourceName]);

@@ -19,6 +19,8 @@ var BackgroundsParser = require('./parsers/BackgroundsParser.js');
 var PathsParser = require('./parsers/PathsParser.js');
 var ScriptsParser = require('./parsers/ScriptsParser.js');
 var FontsParser = require('./parsers/FontsParser.js');
+var TimelinesParser = require('./parsers/TimelinesParser.js');
+var ObjectsParser = require('./parsers/ObjectsParser.js');
 
 var GMFileReader;
 
@@ -66,6 +68,8 @@ var GMGameBody = Parser.start()
     .nest('Paths',{type:PathsParser.GMPaths})
     .nest('Scripts',{type:ScriptsParser.GMScripts})
     .nest('Fonts',{type:FontsParser.GMFonts})
+    .nest('Timelines',{type:TimelinesParser.GMTimelines})
+    .nest('Objects',{type:ObjectsParser.GMObjects})
     .uint32('next')
     .uint32('next2')
 
@@ -116,7 +120,9 @@ GMFileReader = {
             GMBackground: BackgroundsParser.GMBackground,
             GMPath: PathsParser.GMPath,
             GMScript: ScriptsParser.GMScript,
-            GMFont: FontsParser.GMFont
+            GMFont: FontsParser.GMFont,
+            GMTimeline: TimelinesParser.GMTimeline,
+            GMObject: ObjectsParser.GMObject
         }
         fs.writeFile("./parserGenCode.js",GMGame.getCode());
         var parsed_gm_file = GMGame.parse(data);

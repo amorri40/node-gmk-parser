@@ -21,12 +21,9 @@ module.exports[GMResourceName+"Data"] = Parser.start()
                 .nest('Name',{type:Common.GMString})
                 .nest('gm8',{type:Common.GM8LastChanged})
                 .uint32('version')
-                //
-                // # TODO : Handle version 440 Data files
-                //
                 .int32('numberOfMoments')
                 .array('moments',{type:MomentsParser,length:'numberOfMoments'})
-                .nest('stdout', {type: Common.NewStdoutMessage(ResourcesName)})
+                // .nest('stdout', {type: Common.NewStdoutMessage(ResourcesName)})
 
 module.exports[GMResourceName] = Common.NewValidCheckerForGMResource(module.exports[GMResourceName+"Data"]);
 module.exports[GMResourcesName] = Common.NewGMResource(ResourceName, ResourcesName, GMResourceName, module.exports[GMResourceName]);
