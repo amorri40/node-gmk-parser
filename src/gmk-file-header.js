@@ -23,6 +23,7 @@ var TimelinesParser = require('./parsers/TimelinesParser.js');
 var ObjectsParser = require('./parsers/ObjectsParser.js');
 var RoomsParser = require('./parsers/RoomsParser.js');
 var IncludesParser = require('./parsers/IncludesParser.js');
+var PackagesParser = require('./parsers/PackagesParser.js');
 
 var GMFileReader;
 
@@ -84,7 +85,7 @@ var GMGameBody = Parser.start()
             1: Parser.start()
                  .endianess('little')
                 .nest('Includes',{type:IncludesParser.GMIncludes})
-                //  .nest('Packages',{type:PackagesParser.GMPakages})
+                .nest('Packages',{type:PackagesParser.GMPackage})
         },
         defaultChoice: Parser.start()
     })
