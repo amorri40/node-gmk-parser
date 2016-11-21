@@ -22,6 +22,7 @@ var FontsParser = require('./parsers/FontsParser.js');
 var TimelinesParser = require('./parsers/TimelinesParser.js');
 var ObjectsParser = require('./parsers/ObjectsParser.js');
 var RoomsParser = require('./parsers/RoomsParser.js');
+var IncludesParser = require('./parsers/IncludesParser.js');
 
 var GMFileReader;
 
@@ -72,6 +73,21 @@ var GMGameBody = Parser.start()
     .nest('Timelines',{type:TimelinesParser.GMTimelines})
     .nest('Objects',{type:ObjectsParser.GMObjects})
     .nest('Rooms',{type:RoomsParser.GMRooms})
+    .int32('lastInstanceId')
+    .int32('lastTileId')
+    .choice('', {
+        tag: VersionCheck.is_greater_than_equal_700,
+        choices: {
+            0: Parser.start()
+                 .endianess('little'),
+
+            1: Parser.start()
+                 .endianess('little')
+                .nest('Includes',{type:IncludesParser.GMIncludes})
+                //  .nest('Packages',{type:PackagesParser.GMPakages})
+        },
+        defaultChoice: Parser.start()
+    })
     .int32('next')
     .int32('next2')
 
@@ -125,7 +141,8 @@ GMFileReader = {
             GMFont: FontsParser.GMFont,
             GMTimeline: TimelinesParser.GMTimeline,
             GMObject: ObjectsParser.GMObject,
-            GMRoom: RoomsParser.GMRoom
+            GMRoom: RoomsParser.GMRoom,
+            GMInclude: IncludesParser.GMInclude
         }
         fs.writeFile("./parserGenCode.js",GMGame.getCode());
         var parsed_gm_file = GMGame.parse(data);
