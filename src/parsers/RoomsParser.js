@@ -32,7 +32,7 @@ var ViewParser = Parser.start()
                 .int32('viewH')
                 .int32('viewPortX')
                 .int32('viewPortY')
-                .choice('portSize', {
+                .choice('', {
                     tag: VersionCheck.is_greater_than_520,
                     choices: {
                         0: Common.NullParser,

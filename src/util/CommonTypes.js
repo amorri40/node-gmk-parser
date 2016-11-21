@@ -23,7 +23,7 @@ module.exports.GMDouble = Parser.start()
 
 module.exports.GM8LastChanged = Parser.start()
                 .endianess('little')
-                .choice('lastChanged', {
+                .choice('', {
                     tag: VersionCheck.is_greater_than_equal_version_800,
                     choices: {
                         0: module.exports.NullParser,
@@ -89,16 +89,16 @@ module.exports.NewGMResource = function(ResourceName, ResourcesName, GMResourceN
                  .int32('version')
                  .int32('NumberOf'+ResourcesName)
                 //  each individual resource is deflated (compressed) in gm8
-                .choice(ResourcesName, {
+                .choice('', {
                     tag: VersionCheck.is_greater_than_equal_version_800,
                     choices: {
                         0: Parser.start()
                             .endianess('little')
-                            .array(ResourcesName,{ length:get_number_of_resources, type: GMResourceParser}),
+                            .array(ResourcesName+'List',{ length:get_number_of_resources, type: GMResourceParser}),
 
                         1: Parser.start()
                             .endianess('little')
-                            .array(ResourcesName,{length:get_number_of_resources, type: module.exports.NewGMCompressedResource(GMResourceName)})
+                            .array(ResourcesName+'List',{length:get_number_of_resources, type: module.exports.NewGMCompressedResource(GMResourceName)})
                     }
                 })
     return GMResourceList;
