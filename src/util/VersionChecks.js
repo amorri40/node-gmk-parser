@@ -9,7 +9,7 @@ var possibilities_to_generate = {
     "is_less_than_equal" : "<="
 }
 
-var possible_versions=["400", "520", "530","600", "700", "710", "800"];
+var possible_versions=["400", "430", "520", "530","600", "700", "710", "800"];
 
 _.each(possibilities_to_generate, function(comparison_operator, name) {
 

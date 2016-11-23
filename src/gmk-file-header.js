@@ -6,6 +6,8 @@ var Parser = require("binary-parser").Parser;
 var readFile = Promise.promisify(fs.readFile);
 
 var VersionCheck = require("./util/VersionChecks");
+var Common = require("./util/CommonTypes");
+
 
 //
 // # Parsers
@@ -24,6 +26,8 @@ var ObjectsParser = require('./parsers/ObjectsParser.js');
 var RoomsParser = require('./parsers/RoomsParser.js');
 var IncludesParser = require('./parsers/IncludesParser.js');
 var PackagesParser = require('./parsers/PackagesParser.js');
+var GameInformationParser = require('./parsers/GameInformationParser.js');
+
 
 var GMFileReader;
 
@@ -41,6 +45,22 @@ var GMFileHeader = Parser.start()
         },
         defaultChoice: SettingsParser.GameID
     })
+
+var GMTreeNode = Parser.start()
+        .endianess('little')
+        .namely('GMTreeNode')
+        .int32('status')
+        .int32('kind')
+        .int32('index')
+        .nest('name',{type:Common.GMString})
+        .int32('contents')
+        .array('nodes', {type: 'GMTreeNode', length:'contents'})
+
+
+var GMTreeParser = Parser.start()
+        .endianess('little')
+        .array('nodes', {type: GMTreeNode, length:11})
+
 
 //
 // # GM game body ignoring the header
@@ -89,8 +109,22 @@ var GMGameBody = Parser.start()
         },
         defaultChoice: Parser.start()
     })
-    .int32('next')
-    .int32('next2')
+    .nest('GameInformation', {type: GameInformationParser.GMGameInformation})
+    .int32('librayCreationVersion')
+    .int32('numberOfLibraries')
+    .array('libraries', {length:'numberOfLibraries',
+        type: Parser.start()
+        .endianess('little')
+        .int32('skip')
+    })
+    .int32('roomExecutionOrderVersion')
+    .int32('numberOfRooms')
+    .array('roomOrder', {length:'numberOfRooms',
+        type: Parser.start()
+        .endianess('little')
+        .int32('skip')
+    })
+    .nest('tree', {type:GMTreeParser})
 
 
 //
@@ -143,7 +177,8 @@ GMFileReader = {
             GMTimeline: TimelinesParser.GMTimeline,
             GMObject: ObjectsParser.GMObject,
             GMRoom: RoomsParser.GMRoom,
-            GMInclude: IncludesParser.GMInclude
+            GMInclude: IncludesParser.GMInclude,
+            GMGameInformation: GameInformationParser.GMGameInformationData
         }
         fs.writeFile("./parserGenCode.js",GMGame.getCode());
         var parsed_gm_file = GMGame.parse(data);

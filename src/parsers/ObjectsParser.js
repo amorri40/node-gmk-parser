@@ -25,7 +25,7 @@ var EventParser = Parser.start()
 var EventsParser = Parser.start()
                 .endianess('little')
                 .array('events',{type:EventParser, readUntil: function(item,buffer) {
-                    console.error("Read ahead :: ",item, item.isvalid === -1);
+                    // console.error("Read ahead :: ",item, item.isvalid === -1);
                     return item.isvalid === -1;
                 }})
 
