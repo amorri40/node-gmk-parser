@@ -13,6 +13,11 @@ time grunt mochaTest
 time ava
 ```
 
+## Jest Tests
+```bash
+time jest
+```
+
 # Mocha vs Ava comparison
 ## Time for ava:
 ```bash
@@ -30,4 +35,11 @@ sys     0m0.326s
 real    0m1.552s
 user    0m1.478s
 sys     0m0.281s
+```
+
+## Time for jest:
+```
+real    0m2.505s
+user    0m2.363s
+sys     0m0.586s
 ```

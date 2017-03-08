@@ -11,11 +11,12 @@ var game_header={ identifier: 1234321,
 
 var data = null;
 
-beforeAll(function() {
-    expect.assertions(1);
+beforeAll(function(done) {
+    // expect.assertions(1);
     return GMFileReader.getFullByteDataFromFile('./tests/gm_files/fire_example.gmk').then(
         function(full_bytes_of_file) {
             data=full_bytes_of_file;
+            done();
         }
     );
 })
@@ -26,5 +27,5 @@ it('should exist', function() {
 
 it('should unencrypt full game', function() {
     var unencrypted_data = GMKEncryption.unencryptFullGame(game_header,data);
-    expect(unencrypted_data.length).toBe(44664);
+    expect(unencrypted_data.length).to.be.equal(44664);
 });

@@ -49,5 +49,9 @@
     "failFast": true,
     "tap": false,
     "powerAssert": false
+  },
+  "jest": {
+    "verbose": true,
+    "testMatch":["**/tests/jest/*.js"]
   }
 }

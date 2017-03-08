@@ -23,7 +23,7 @@ it('should exist', function() {
     expect(GMFileReader).to.not.be.undefined;
 });
 
-it('should open a 530 gmd file (pathtracer.gmd)', function() {
+it('should open a 530 gmd file (pathtracer.gmd)', function(done) {
         // this.timeout(25000);
         var file_path = './tests/gm_files/pathtracer.gmd';
         var gmk_file = GMFileReader.openGmFile(file_path);
@@ -31,6 +31,7 @@ it('should open a 530 gmd file (pathtracer.gmd)', function() {
         return gmk_file.then(function asserts (actual) {
             common_expects(actual, file_path);
             expect(actual.GMFileHeader.version).to.be.equal(530);
+            done();
         }).catch(common_catch_block);
     });
 
@@ -38,7 +39,7 @@ var gm6_files = [
     "1945v3.gm6"
     ]
 _.each(gm6_files, function(gm_file) {
-    it(`should open a gm6 (600) file (${gm_file})`, function() {
+    it(`should open a gm6 (600) file (${gm_file})`, function(done) {
         // this.timeout(50000);
         var file_path = `./tests/gm_files/${gm_file}`;
         var gmk_file = GMFileReader.openGmFile(file_path);
@@ -46,6 +47,7 @@ _.each(gm6_files, function(gm_file) {
        return gmk_file.then(function asserts (actual) {
            common_expects(actual, file_path);
            expect(actual.GMFileHeader.version).to.be.equal(600);
+           done();
        }).catch(common_catch_block);
     });
 });
@@ -56,7 +58,7 @@ var gm7_files = [//"fire_example.gmk",
 
 _.each(gm7_files, function(gm_file) {
 
-    it(`should open a gm7 (701) obfuscated file (${gm_file})`, function() {
+    it(`should open a gm7 (701) obfuscated file (${gm_file})`, function(done) {
     // this.timeout(50000);
     var file_path = `./tests/gm_files/${gm_file}`;
     var gmk_file = GMFileReader.openGmFile(file_path);
@@ -66,6 +68,7 @@ _.each(gm7_files, function(gm_file) {
         expect(actual.GMFileHeader.version).to.be.equal(701);
         if ( gm_file === "fire_example.gmk")
         expect(actual.GMFileHeader.encryption.seed).to.be.equal(16085);
+        done();
     }).catch(common_catch_block);
 });
 })
