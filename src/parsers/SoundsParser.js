@@ -1,5 +1,4 @@
 var Parser = require("binary-parser").Parser;
-var GMKZlib = require("./GMKZlib.js");
 var VersionCheck = require("../util/VersionChecks");
 var Common = require("../util/CommonTypes");
 
