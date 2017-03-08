@@ -16,10 +16,11 @@
     "lodash": "^4.16.6"
   },
   "devDependencies": {
+    "ava": "^0.18.2",
     "mocha": "^3.1.2"
   },
   "scripts": {
-    "test": "grunt watch"
+    "test": "grunt watch && ava"
   },
   "repository": {
     "type": "git",
@@ -33,5 +34,20 @@
   "bugs": {
     "url": "https://github.com/amorri40/node-gmk-parser/issues"
   },
-  "homepage": "https://github.com/amorri40/node-gmk-parser#readme"
+  "homepage": "https://github.com/amorri40/node-gmk-parser#readme",
+
+  "ava": {
+    "files": [
+      "**/*.test.js"
+    ],
+    "source": [
+      "**/*.{js,jsx}",
+      "!dist/**/*"
+    ],
+
+    "concurrency": 5,
+    "failFast": true,
+    "tap": false,
+    "powerAssert": false
+  }
 }
